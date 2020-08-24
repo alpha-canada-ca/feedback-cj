@@ -82,22 +82,18 @@ public class Main implements CommandLineRunner {
 		this.autoTag();
 		this.airTableSync();
 		this.completeProcessing();
-		//testRemovePII();
+		// testRemovePII();
 
 	}
-	
+
 	public void testRemovePII() {
-		String content =this.contentService.cleanContent("We own our business\n" + 
-				"Property\n" + 
-				"Need\n" + 
-				"Buss  relate to travel\n" + 
-				"And shut  down since March\n" + 
-				"But have to pay   city  403  735 6090 taxes   condo  fee and  utility   \n" + 
-				"Cant  get  rent  assistance  do  not have  rent  to  pay \n" + 
-				"How  can  I  get help to  pay   city  taxes ut and condo fee    etc  \n" + 
-				"Call  me   403  735 6090\n" + 
-				"Than");
-		System.out.println("Content cleaned."+content);
+		String content = this.contentService.cleanContent("We own our business\n" + "Property\n" + "Need\n"
+				+ "Buss  relate to travel\n" + "And shut  down since March\n"
+				+ "But have to pay   city  403  735 6090 taxes   condo  fee and  utility   \n"
+				+ "Cant  get  rent  assistance  do  not have  rent  to  pay \n"
+				+ "How  can  I  get help to  pay   city  taxes ut and condo fee    etc  \n"
+				+ "Call  me   403  735 6090\n" + "Than");
+		System.out.println("Content cleaned." + content);
 	}
 
 	public void syncDataAfter(String date) throws ParseException {
@@ -149,7 +145,7 @@ public class Main implements CommandLineRunner {
 		for (Problem problem : pList) {
 			String model = "";
 			try {
-				if (problem.getYesno().toUpperCase().equals("NO")) {
+				if (problem.getYesno().toUpperCase().equals("NO") && !problem.getProblemDetails().trim().equals("")) {
 					String lang = "en";
 					if (problem.getLanguage().toLowerCase().equals("fr")) {
 						lang = "fr";
