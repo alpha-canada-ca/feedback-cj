@@ -83,6 +83,7 @@ public class Main implements CommandLineRunner {
 		this.airTableSync();
 		this.completeProcessing();
 		// testRemovePII();
+		System.out.println("CI/CD Test, this will be removed later...");
 
 	}
 
@@ -278,8 +279,10 @@ public class Main implements CommandLineRunner {
 					this.problemRepository.save(problem);
 				}
 			} catch (Exception e) {
+				
 				System.out.println(
 						e.getMessage() + " Could not process record: " + problem.getId() + " URL:" + problem.getUrl());
+				//this.problemRepository.delete(problem);
 
 			}
 		}

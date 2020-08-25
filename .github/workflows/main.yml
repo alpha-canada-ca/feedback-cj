@@ -30,8 +30,8 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
     
     - run: |
-        docker build -f ./scripts/Dockerfile . -t tbsacr.azurecr.io/pagefeedback-cj:1.0.0
-        docker push tbsacr.azurecr.io/pagefeedback-cj:1.0.0
+        docker build -f ./scripts/Dockerfile . -t tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
+        docker push tbsacr.azurecr.io/feedback-cj::${{ github.sha }}
       
     # Set the target AKS cluster.
     - uses: Azure/aks-set-context@v1
@@ -46,7 +46,7 @@ jobs:
           kubernetes/suggestion-deployment.yaml
           kubernetes/suggestion-service.yaml
         images: |
-          tbsacr.azurecr.io/pagefeedback-cj:1.0.0
+          tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
         namespace: |
           pagesuccess
 
