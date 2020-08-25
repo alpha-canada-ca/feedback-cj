@@ -24,9 +24,7 @@
 		<dependency>
 			<groupId>ca.gc.tbs</groupId>
 			<artifactId>PageSuccess</artifactId>
-			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/PageSuccess-0.0.1-SNAPSHOT.jar</systemPath>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sybit</groupId>
