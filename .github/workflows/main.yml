@@ -30,7 +30,7 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
     
     - run: |
-        docker build -f ./scripts/Dockerfile . -t tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
+        docker build -f ./docker/Dockerfile . -t tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
         docker push tbsacr.azurecr.io/feedback-cj::${{ github.sha }}
       
     # Set the target AKS cluster.
