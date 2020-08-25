@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: pagefeedback-cj
+  name: feedback-cj
 spec:
   schedule: "*/3 * * * *"
   jobTemplate:
@@ -9,8 +9,8 @@ spec:
       template:
         spec:
           containers:
-          - name: pagefeedback-cj
-            image: tbsacr.azurecr.io/pagefeedback-cj:1.0.0
+          - name: feedback-cj
+            image: tbsacr.azurecr.io/feedback-cj:1.0.0
             imagePullPolicy: Always
             resources: 
               limits:
