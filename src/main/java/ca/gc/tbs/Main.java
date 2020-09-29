@@ -154,15 +154,22 @@ public class Main implements CommandLineRunner {
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
 					String title = problem.getTitle().toLowerCase();
 					String inst = problem.getInstitution().toLowerCase();
-
-					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes")) {
+					/* IF(SEARCH("Symptômes", {Page title}), "Health", 
+					 * IF(SEARCH("Symptoms", {Page title}), "Health", 
+					 * IF(SEARCH("Prevention", {Page title}), "Health", 
+					 * IF( SEARCH("entreprise", {Page title}), "Business", 
+					 * IF(SEARCH("business", {Page title}), "Business", 
+					 * IF(SEARCH("FIN",{Institution}), "Business", 
+					 * IF(SEARCH("CRA",{Institution}), "Business", 
+					 * IF(SEARCH("Health",{Theme}), "Health") ) ) ) ) ) ) ) */
+					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes") || title.contains("health")) {
 						model = "Health";
-
 					} else if (title.contains("entreprise") || title.contains("business")) {
 						model = "Business";
-					} else if (inst != null && inst.contains("fin")) {
+					} else if (inst != null && (inst.contains("fin") || inst.contains("cra"))) {
 						model = "Business";
 					}
+					
 
 					if (!model.equals("")) {
 						Document doc = Jsoup.connect("https://suggestion.tbs.alpha.canada.ca/suggestCategory?lang="
