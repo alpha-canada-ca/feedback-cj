@@ -166,8 +166,10 @@ public class Main implements CommandLineRunner {
 						model = "Health";
 					} else if (title.contains("entreprise") || title.contains("business")) {
 						model = "Business";
-					} else if (inst != null && (inst.contains("fin") || inst.contains("cra"))) {
+					} else if (inst != null && inst.contains("fin")) {
 						model = "Business";
+					} else if (inst != null && inst.contains("cra")) {
+						model = "Benefits";
 					}
 					
 
