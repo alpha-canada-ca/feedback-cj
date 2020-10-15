@@ -256,6 +256,7 @@ public class Main implements CommandLineRunner {
 		for (Problem problem : pList) {
 			try {
 				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")) {
+					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
@@ -289,7 +290,7 @@ public class Main implements CommandLineRunner {
 					problem.setAirTableSync("true");
 					this.problemRepository.save(problem);
 					System.out.println("Processed record:"+i);
-					i++;
+					
 					if (i >= maxToSync) {
 						System.out.println("Sync only "+ maxToSync +" records at a time...");
 						break;
