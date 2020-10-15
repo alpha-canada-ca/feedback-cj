@@ -289,7 +289,7 @@ public class Main implements CommandLineRunner {
 					problemTable.create(airProblem);
 					problem.setAirTableSync("true");
 					this.problemRepository.save(problem);
-					System.out.println("Processed record:"+i);
+					System.out.println("Processed record:"+ i + " Date:"+ airProblem.getDate());
 					
 					if (i >= maxToSync) {
 						System.out.println("Sync only "+ maxToSync +" records at a time...");
