@@ -251,6 +251,8 @@ public class Main implements CommandLineRunner {
 		pList.addAll(this.problemRepository.findByAirTableSync("false"));
 		System.out.println("Connected to MongoDB");
 		System.out.println("Found " + pList.size() + " records that need to by added.");
+		int i = 0;
+		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
 				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")) {
@@ -286,16 +288,22 @@ public class Main implements CommandLineRunner {
 					problemTable.create(airProblem);
 					problem.setAirTableSync("true");
 					this.problemRepository.save(problem);
+					System.out.println("Processed record:"+i);
+					i++;
+					if (i >= maxToSync) {
+						System.out.println("Sync only "+ maxToSync +" records at a time...");
+						break;
+					}
 				}
 			} catch (Exception e) {
 				
 				System.out.println(
-						e.getMessage() + " Could not process record: " + problem.getId() + " URL:" + problem.getUrl());
+						e.getMessage() + " Could not sync record: " + problem.getId() + " URL:" + problem.getUrl());
 				//this.problemRepository.delete(problem);
 
 			}
 		}
-
+		System.out.println("Synced records:" + i );
 	}
 
 	private void getPageTitleIds() throws Exception {
