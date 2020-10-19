@@ -256,7 +256,7 @@ public class Main implements CommandLineRunner {
 		for (Problem problem : pList) {
 			try {
 				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") &&
-					problem.getYesno().toUpperCase().equals("NO")) {
+					problem.getYesno().toUpperCase().equals("NO") && !problem.getProblemDetails().trim().equals("")) {
 					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
