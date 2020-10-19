@@ -255,7 +255,8 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")) {
+				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") &&
+					problem.getYesno().toUpperCase().equals("NO")) {
 					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
@@ -296,6 +297,9 @@ public class Main implements CommandLineRunner {
 						break;
 					}
 				}
+				System.out.println("yes or no: " + problem.getYesno());
+				problem.setAirTableSync("true");
+				this.problemRepository.save(problem);
 			} catch (Exception e) {
 				
 				System.out.println(
