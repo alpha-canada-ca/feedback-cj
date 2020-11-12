@@ -35,8 +35,6 @@ public class AirTableProblemEnhanced {
 	private String actionable;
 	@SerializedName("Main section")
 	private String mainSection;
-	@SerializedName("Yes/No")
-	private String yesno;
 	@SerializedName("Status")
 	private String status;
 	@SerializedName("Institution")
@@ -127,14 +125,6 @@ public class AirTableProblemEnhanced {
 
 	public void setRefiningDetails(String refiningDetails) {
 		this.refiningDetails = refiningDetails;
-	}
-
-	public String getYesno() {
-		return yesno;
-	}
-
-	public void setYesno(String yesno) {
-		this.yesno = yesno;
 	}
 
 	public String getStatus() {

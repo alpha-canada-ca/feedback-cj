@@ -35,8 +35,7 @@ public class AirTableProblem {
 	@SerializedName("Actionable")
 	private Boolean actionable;
 	
-	@SerializedName("Yes/No")
-	private String yesno;
+	
 	
 	
 	
@@ -111,12 +110,6 @@ public class AirTableProblem {
 	}
 	public void setUniqueID(String uniqueID) {
 		this.uniqueID = uniqueID;
-	}
-	public String getYesno() {
-		return yesno;
-	}
-	public void setYesno(String yesno) {
-		this.yesno = yesno;
 	}
 	public String getPIIType() {
 		return PIIType;
