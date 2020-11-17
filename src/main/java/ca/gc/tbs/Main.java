@@ -56,11 +56,15 @@ public class Main implements CommandLineRunner {
 
 	@Value("${airtable.mlTags}")
 	private String airtableMLTags;
+	
+	@Value("${airtable.URL_link}")
+	private String airtableURLLink;
 
 	private Airtable airTable;
 	private Base base;
 
 	private HashMap<String, String> pageTitleIds = new HashMap<String, String>();
+	private HashMap<String, String> urlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> mlTagIds = new HashMap<String, String>();
 
 	public static void main(String args[]) throws Exception {
@@ -78,6 +82,7 @@ public class Main implements CommandLineRunner {
 		this.base = this.airTable.base(this.airtableBase);
 		this.getPageTitleIds();
 		this.getMLTagIds();
+		this.getURLLinkIds();
 		this.removePersonalInfo();
 		this.autoTag();
 		this.airTableSync();
@@ -261,6 +266,10 @@ public class Main implements CommandLineRunner {
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
 					airProblem.setURL(problem.getUrl());
+//					if (!this.urlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+//						this.createUrlLinkEntry(problem.getUrl());
+//					}
+					airProblem.getURLLinkIds().add(this.urlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.pageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
 						this.createPageTitleEntry(problem.getTitle());
 					}
@@ -319,6 +328,21 @@ public class Main implements CommandLineRunner {
 			this.pageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
 		}
 	}
+	private void getURLLinkIds() throws Exception {
+		@SuppressWarnings("unchecked")
+		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
+		System.out.println("Connected to Airtable Stats");
+		List<AirTableURLLink> urlLinks = urlLinkTable.select();
+		for (AirTableURLLink url : urlLinks) {
+			try {
+				if(url.getURLlink() == null){}else {
+				this.urlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage()+ " Could not add URL_LINK: " + url.getURLlink() + " ID: " + url.getId());
+			}
+		}
+	}
 
 	private void getMLTagIds() throws Exception {
 		@SuppressWarnings("unchecked")
@@ -344,6 +368,14 @@ public class Main implements CommandLineRunner {
 		this.pageTitleIds.put(title.trim().toUpperCase(), stat.getId());
 		System.out.println("Created record for title");
 	}
+	/* private void createUrlLinkEntry(String url) throws Exception {
+		@SuppressWarnings("unchecked")
+		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
+		AirTableURLLink urlLink = new AirTableURLLink(url.trim());
+		urlLink = urlLinkTable.create(urlLink);
+		this.urlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
+		System.out.println("Created record for title");
+	} */
 
 	public ProblemRepository getProblemRepository() {
 		return problemRepository;

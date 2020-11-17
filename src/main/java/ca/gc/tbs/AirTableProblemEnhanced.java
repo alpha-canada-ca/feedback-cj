@@ -15,6 +15,9 @@ public class AirTableProblemEnhanced {
 	private String date;
 	@SerializedName("URL")
 	private String URL;
+	@SerializedName("URL_link")
+	private List<String> URLLinkIds = new ArrayList<String>();
+
 	@SerializedName("Page title")
 	private List<String> pageTitleIds = new ArrayList<String>();
 	@SerializedName("Lang")
@@ -190,5 +193,13 @@ public class AirTableProblemEnhanced {
 	public void setPageTitleIds(List<String> pageTitleIds) {
 		this.pageTitleIds = pageTitleIds;
 	}
+	public List<String> getURLLinkIds() {
+		return URLLinkIds;
+	}
+
+	public void setURLLinkIds(List<String> URLLinkIds) {
+		this.URLLinkIds = URLLinkIds;
+	}
+
 
 }

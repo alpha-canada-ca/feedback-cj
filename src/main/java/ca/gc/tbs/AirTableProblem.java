@@ -11,6 +11,8 @@ public class AirTableProblem {
 	private String date;
 	@SerializedName("URL")
 	private String URL;
+	@SerializedName("Name")
+	private String URL_link;
 	@SerializedName("Page title")
 	private String pageTitle;
 	@SerializedName("Lang")
@@ -104,6 +106,12 @@ public class AirTableProblem {
 	}
 	public void setTopic(String topic) {
 		this.topic = topic;
+	}
+	public String getURL_link() {
+		return URL_link;
+	}
+	public void setURL_link(String uRL_link) {
+		URL_link = uRL_link;
 	}
 	public String getUniqueID() {
 		return uniqueID;
