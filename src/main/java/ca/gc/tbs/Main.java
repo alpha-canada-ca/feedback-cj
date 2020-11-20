@@ -46,26 +46,48 @@ public class Main implements CommandLineRunner {
 	private String airtableKey;
 
 	@Value("${airtable.base}")
-	private String airtableBase;
+	private String problemAirtableBase;
 
 	@Value("${airtable.tab}")
-	private String airtableTab;
+	private String problemAirtableTab;
+	
+	@Value("${health.airtable.base}")
+	private String healthAirtableBase;
 
+	@Value("${health.airtable.tab}")
+	private String healthAirtableTab;
+
+	
+	
 	@Value("${airtable.pageTitleLookup}")
 	private String airtablePageTitleLookup;
 
 	@Value("${airtable.mlTags}")
 	private String airtableMLTags;
 	
+	@Value("${health.airtable.pageTitleLookup}")
+	private String healthAirtablePageTitleLookup;
+
+	@Value("${health.airtable.mlTags}")
+	private String healthAirtableMLTags;
+	
 	@Value("${airtable.URL_link}")
 	private String airtableURLLink;
 
-	private Airtable airTable;
-	private Base base;
+	
 
-	private HashMap<String, String> pageTitleIds = new HashMap<String, String>();
-	private HashMap<String, String> urlLinkIds = new HashMap<String, String>();
-	private HashMap<String, String> mlTagIds = new HashMap<String, String>();
+	private Airtable problemAirTable;
+	private Base problemBase;
+	
+	private Airtable healthAirTable;
+	private Base healthBase;
+
+	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
+	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
+	private HashMap<String, String> problemUrlLinkIds = new HashMap<String, String>();
+	private HashMap<String, String> healthUrlLinkIds = new HashMap<String, String>();
+	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
+	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 
 	public static void main(String args[]) throws Exception {
 		new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
@@ -78,11 +100,18 @@ public class Main implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		this.airTable = new Airtable().configure(this.airtableKey);
-		this.base = this.airTable.base(this.airtableBase);
-		this.getPageTitleIds();
-		this.getMLTagIds();
-		this.getURLLinkIds();
+		this.problemAirTable = new Airtable().configure(this.airtableKey);
+		this.problemBase = this.problemAirTable.base(this.problemAirtableBase);
+		this.healthAirTable = new Airtable().configure(this.airtableKey);
+		this.healthBase = this.healthAirTable.base(this.healthAirtableBase);
+		this.getPageTitleIds(problemBase);
+		this.getPageTitleIds(healthBase);
+		this.getMLTagIdsHealth();
+		this.getMLTagIdsProblem();
+		//requires work for multiple base
+		//this.getMLTagIds(healthBase, healthAirtableMLTags);
+		this.getURLLinkIds(problemBase);
+		this.getURLLinkIds(healthBase);
 		this.removePersonalInfo();
 		this.autoTag();
 		this.airTableSync();
@@ -250,7 +279,9 @@ public class Main implements CommandLineRunner {
 
 	public void airTableSync() throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableProblemEnhanced> problemTable = base.table(this.airtableTab, AirTableProblemEnhanced.class);
+		Table<AirTableProblemEnhanced> problemTable = problemBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		@SuppressWarnings("unchecked")
+		Table<AirTableProblemEnhanced> healthTable = healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		System.out.println("Connected to Airtable");
 		List<Problem> pList = this.problemRepository.findByAirTableSync(null);
 		pList.addAll(this.problemRepository.findByAirTableSync("false"));
@@ -269,27 +300,28 @@ public class Main implements CommandLineRunner {
 //					if (!this.urlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 //						this.createUrlLinkEntry(problem.getUrl());
 //					}
-					airProblem.getURLLinkIds().add(this.urlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-					if (!this.pageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-						this.createPageTitleEntry(problem.getTitle());
+					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+						this.createPageTitleEntry(problem.getTitle(), problemBase, airtablePageTitleLookup);
 					}
-					airProblem.getPageTitleIds().add(this.pageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+					airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
 					airProblem.setLang(problem.getLanguage().toUpperCase());
 					airProblem.setWhatswrong(problem.getProblem());
 					airProblem.setComment(problem.getProblemDetails());
 					airProblem.setIgnore(null);
+					
 					for (String tag : problem.getTags()) {
-						if (this.mlTagIds.containsKey(tag.trim().toUpperCase())) {
-							airProblem.getTags().add(this.mlTagIds.get(tag.trim().toUpperCase()));
+						if (this.problemMlTagIds.containsKey(tag.trim().toUpperCase())) {
+							airProblem.getTags().add(this.problemMlTagIds.get(tag.trim().toUpperCase()));
 						} else {
 							System.out.println("Missing tag id for:" + tag);
 						}
-					}
+					} 
 					airProblem.setTagsConfirmed(null);
 					airProblem.setRefiningDetails("");
 					airProblem.setActionable(null);
 					airProblem.setMainSection(problem.getSection());
-				//	airProblem.setYesno(problem.getYesno());
+				
 					airProblem.setStatus("New");
 					airProblem.setLookupTags(null);
 					airProblem.setInstitution(problem.getInstitution());
@@ -304,8 +336,45 @@ public class Main implements CommandLineRunner {
 						System.out.println("Sync only "+ maxToSync +" records at a time...");
 						break;
 					}
+				} 
+				if(problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
+						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")) {
+					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+					airProblem.setUniqueID(problem.getId());
+					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
+					airProblem.setURL(problem.getUrl());
+//					if (!this.urlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+//						this.createUrlLinkEntry(problem.getUrl());
+//					}
+					airProblem.getURLLinkIds().add(this.healthUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+					if (!this.healthPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+						this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
+					}
+					airProblem.getPageTitleIds().add(this.healthPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+					airProblem.setLang(problem.getLanguage().toUpperCase());
+					airProblem.setWhatswrong(problem.getProblem());
+					airProblem.setComment(problem.getProblemDetails());
+					airProblem.setIgnore(null);
+					
+					for (String tag : problem.getTags()) {
+						if (this.healthMlTagIds.containsKey(tag.trim().toUpperCase())) {
+							airProblem.getTags().add(this.healthMlTagIds.get(tag.trim().toUpperCase()));
+						} else {
+							System.out.println("Missing tag id for:" + tag);
+						}
+					}  
+					airProblem.setTagsConfirmed(null);
+					airProblem.setRefiningDetails("");
+					airProblem.setActionable(null);
+					airProblem.setMainSection(problem.getSection());
+			
+					airProblem.setStatus("New");
+					airProblem.setLookupTags(null);
+					airProblem.setInstitution(problem.getInstitution());
+					airProblem.setTheme(problem.getTheme());
+					airProblem.setId(null);
+					healthTable.create(airProblem);
 				}
-
 				problem.setAirTableSync("true");
 				this.problemRepository.save(problem);
 			} catch (Exception e) {
@@ -316,27 +385,35 @@ public class Main implements CommandLineRunner {
 
 			}
 		}
-		System.out.println("Synced records:" + i );
+		//System.out.println("Synced records:" + i );
 	}
 
-	private void getPageTitleIds() throws Exception {
+	private void getPageTitleIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableStat> stats = statsTable.select();
 		for (AirTableStat stat : stats) {
-			this.pageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
+			if(base.equals(problemBase))
+				this.problemPageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
+			if(base.equals(healthBase))
+				this.healthPageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
 		}
 	}
-	private void getURLLinkIds() throws Exception {
+	private void getURLLinkIds(Base b) throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
+		Table<AirTableURLLink> urlLinkTable = b.table(this.airtableURLLink, AirTableURLLink.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableURLLink> urlLinks = urlLinkTable.select();
 		for (AirTableURLLink url : urlLinks) {
 			try {
 				if(url.getURLlink() == null){}else {
-				this.urlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
+					if(b.equals(problemBase)) {
+						this.problemUrlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
+					}
+					if(b.equals(healthBase)) {
+						this.healthUrlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
+					}
 				}
 			} catch (Exception e) {
 				System.out.println(e.getMessage()+ " Could not add URL_LINK: " + url.getURLlink() + " ID: " + url.getId());
@@ -344,28 +421,44 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
-	private void getMLTagIds() throws Exception {
+	private void getMLTagIdsHealth() throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableMLTag> tagsTable = base.table(this.airtableMLTags, AirTableMLTag.class);
+		Table<AirTableMLTag> tagsTable = healthBase.table(airtableMLTags, AirTableMLTag.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableMLTag> tags = tagsTable.select();
 		for (AirTableMLTag tag : tags) {
 			try {
-				String tagName = tag.getTag().trim().toUpperCase();
-				String id = tag.getId();
-				this.mlTagIds.put(tagName, id);
+				this.healthMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
+			} catch (Exception e) {
+				System.out.println("Could not add ML tag because:" + e.getMessage());
+			}
+		}
+	}
+	private void getMLTagIdsProblem() throws Exception {
+		@SuppressWarnings("unchecked")
+		Table<AirTableMLTag> tagsTable = problemBase.table(airtableMLTags, AirTableMLTag.class);
+		System.out.println("Connected to Airtable Stats");
+		List<AirTableMLTag> tags = tagsTable.select();
+		for (AirTableMLTag tag : tags) {
+			try {
+				this.problemMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
 			} catch (Exception e) {
 				System.out.println("Could not add ML tag because:" + e.getMessage());
 			}
 		}
 	}
 
-	private void createPageTitleEntry(String title) throws Exception {
+	private void createPageTitleEntry(String title, Base base, String pageTitle) throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
+		Table<AirTableStat> statsTable = base.table(pageTitle, AirTableStat.class);
 		AirTableStat stat = new AirTableStat(title.trim());
 		stat = statsTable.create(stat);
-		this.pageTitleIds.put(title.trim().toUpperCase(), stat.getId());
+		if(base.equals(problemBase)) {
+			this.problemPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
+		}
+		if(base.equals(healthBase)) {
+			this.healthPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
+		}
 		System.out.println("Created record for title");
 	}
 	/* private void createUrlLinkEntry(String url) throws Exception {
