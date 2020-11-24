@@ -291,7 +291,8 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("")) {
+				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") 
+						&& !problem.getProblemDetails().trim().equals("") && !problem.getInstitution().toLowerCase().contains("health")) {
 					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
