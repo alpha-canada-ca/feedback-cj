@@ -298,13 +298,14 @@ public class Main implements CommandLineRunner {
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
 					airProblem.setURL(problem.getUrl());
-//					if (!this.urlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-//						this.createUrlLinkEntry(problem.getUrl());
-//					}
+					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+						this.createUrlLinkEntry(problem.getUrl(), problemBase, airtableURLLink);
+					}
 					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
 						this.createPageTitleEntry(problem.getTitle(), problemBase, airtablePageTitleLookup);
 					}
+					
 					airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
 					airProblem.setLang(problem.getLanguage().toUpperCase());
 					airProblem.setWhatswrong(problem.getProblem());
@@ -317,7 +318,7 @@ public class Main implements CommandLineRunner {
 						} else {
 							System.out.println("Missing tag id for:" + tag);
 						}
-					} 
+					}  
 					airProblem.setTagsConfirmed(null);
 					airProblem.setRefiningDetails("");
 					airProblem.setActionable(null);
@@ -344,9 +345,9 @@ public class Main implements CommandLineRunner {
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
 					airProblem.setURL(problem.getUrl());
-//					if (!this.urlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-//						this.createUrlLinkEntry(problem.getUrl());
-//					}
+					if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+						this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
+					}
 					airProblem.getURLLinkIds().add(this.healthUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.healthPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
 						this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
@@ -462,14 +463,20 @@ public class Main implements CommandLineRunner {
 		}
 		System.out.println("Created record for title");
 	}
-	/* private void createUrlLinkEntry(String url) throws Exception {
-		@SuppressWarnings("unchecked")
-		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
-		AirTableURLLink urlLink = new AirTableURLLink(url.trim());
-		urlLink = urlLinkTable.create(urlLink);
-		this.urlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
-		System.out.println("Created record for title");
-	} */
+
+	 private void createUrlLinkEntry(String url, Base base, String pageTitle) throws Exception {
+		 @SuppressWarnings("unchecked")
+			Table<AirTableURLLink> urlLinkTable = base.table(pageTitle, AirTableURLLink.class);
+			AirTableURLLink urlLink = new AirTableURLLink(url.trim());
+			urlLink = urlLinkTable.create(urlLink);
+			if(base.equals(problemBase)) {
+				this.problemUrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
+			}
+			if(base.equals(healthBase)) {
+				this.healthUrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
+			}
+			System.out.println("Created record for title");
+	} 
 
 	public ProblemRepository getProblemRepository() {
 		return problemRepository;
