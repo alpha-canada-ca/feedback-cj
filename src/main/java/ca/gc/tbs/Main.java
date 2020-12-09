@@ -16,8 +16,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+//import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
+//import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
@@ -34,7 +34,7 @@ import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "ca.gc.tbs.domain", "ca.gc.tbs.repository" })
-@EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
+//@EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class Main implements CommandLineRunner {
 
 	public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
