@@ -16,6 +16,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
@@ -32,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "ca.gc.tbs.domain", "ca.gc.tbs.repository" })
+@EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class Main implements CommandLineRunner {
 
 	public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -56,8 +59,6 @@ public class Main implements CommandLineRunner {
 
 	@Value("${health.airtable.tab}")
 	private String healthAirtableTab;
-
-	
 	
 	@Value("${airtable.pageTitleLookup}")
 	private String airtablePageTitleLookup;
@@ -84,8 +85,10 @@ public class Main implements CommandLineRunner {
 
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
+	
 	private HashMap<String, String> problemUrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> healthUrlLinkIds = new HashMap<String, String>();
+	
 	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 
@@ -108,8 +111,6 @@ public class Main implements CommandLineRunner {
 		this.getPageTitleIds(healthBase);
 		this.getMLTagIdsHealth();
 		this.getMLTagIdsProblem();
-		//requires work for multiple base
-		//this.getMLTagIds(healthBase, healthAirtableMLTags);
 		this.getURLLinkIds(problemBase);
 		this.getURLLinkIds(healthBase);
 		this.removePersonalInfo();
@@ -296,7 +297,9 @@ public class Main implements CommandLineRunner {
 					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
-					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
+					airProblem.setDate(problem.getProblemDate());
+					System.out.println(problem.getProblemDate());
+				//	System.out.println(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
 					airProblem.setURL(problem.getUrl());
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), problemBase, airtableURLLink);
@@ -343,7 +346,7 @@ public class Main implements CommandLineRunner {
 						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
-					airProblem.setDate(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
+					airProblem.setDate(problem.getProblemDate());
 					airProblem.setURL(problem.getUrl());
 					if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
@@ -364,7 +367,7 @@ public class Main implements CommandLineRunner {
 						} else {
 							System.out.println("Missing tag id for:" + tag);
 						}
-					}  
+					} 
 					airProblem.setTagsConfirmed(null);
 					airProblem.setRefiningDetails("");
 					airProblem.setActionable(null);
@@ -425,14 +428,14 @@ public class Main implements CommandLineRunner {
 
 	private void getMLTagIdsHealth() throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableMLTag> tagsTable = healthBase.table(airtableMLTags, AirTableMLTag.class);
+		Table<AirTableMLTag> tagsTable = healthBase.table(healthAirtableMLTags, AirTableMLTag.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableMLTag> tags = tagsTable.select();
 		for (AirTableMLTag tag : tags) {
 			try {
 				this.healthMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
 			} catch (Exception e) {
-				System.out.println("Could not add ML tag because:" + e.getMessage());
+				System.out.println("Could not add Health ML tag because:" + e.getMessage());
 			}
 		}
 	}
@@ -445,7 +448,7 @@ public class Main implements CommandLineRunner {
 			try {
 				this.problemMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
 			} catch (Exception e) {
-				System.out.println("Could not add ML tag because:" + e.getMessage());
+				System.out.println("Could not add Problem ML tag because:" + e.getMessage());
 			}
 		}
 	}
