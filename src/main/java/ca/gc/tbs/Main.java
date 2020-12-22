@@ -189,6 +189,8 @@ public class Main implements CommandLineRunner {
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
 					String title = problem.getTitle().toLowerCase();
 					String inst = problem.getInstitution().toLowerCase();
+					String sect = problem.getSection().toLowerCase();
+					String URL = problem.getUrl().toLowerCase();
 					/* IF(SEARCH("Symptômes", {Page title}), "Health", 
 					 * IF(SEARCH("Symptoms", {Page title}), "Health", 
 					 * IF(SEARCH("Prevention", {Page title}), "Health", 
@@ -199,15 +201,31 @@ public class Main implements CommandLineRunner {
 					 * IF(SEARCH("Health",{Theme}), "Health") ) ) ) ) ) ) ) */
 					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes") || title.contains("health")) {
 						model = "Health";
-					} else if (title.contains("entreprise") || title.contains("business")) {
+					}
+					if (title.contains("entreprise") || title.contains("business")) {
 						model = "Business";
-					} else if (inst != null && inst.contains("fin")) {
+					} 
+					if (inst != null && inst.contains("fin")) {
 						model = "Business";
-					} else if (inst != null && inst.contains("cra")) {
+					} 
+					if (inst != null && inst.contains("cra")) {
 						model = "Benefits";
+					} 
+					if (sect != null && sect.contains("travel-wizard")) {
+						model = "travel-wizard";
+					} 
+					if (sect != null && sect.contains("vaccines")) {
+						model = "Vaccines";
+					}
+					if(sect != null && sect.contains("arrivecan")) {
+						model = "ArriveCan";
+					}
+					if(URL != null && URL.contains("canadas-response") || URL.contains("response-canada") || URL.contains("prevention-risques.html")) {
+						model = "Health";
 					}
 					
-
+					// model for Travel, Vaccines
+					
 					if (!model.equals("")) {
 						Document doc = Jsoup.connect("https://suggestion.tbs.alpha.canada.ca/suggestCategory?lang="
 								+ lang + "&text=" + text + "&section=" + model).maxBodySize(0).get();
@@ -304,6 +322,7 @@ public class Main implements CommandLineRunner {
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), problemBase, airtableURLLink);
 					}
+					
 					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
 						this.createPageTitleEntry(problem.getTitle(), problemBase, airtablePageTitleLookup);
