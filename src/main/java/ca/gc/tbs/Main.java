@@ -311,7 +311,8 @@ public class Main implements CommandLineRunner {
 		for (Problem problem : pList) {
 			try {
 				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") 
-						&& !problem.getProblemDetails().trim().equals("") && !problem.getInstitution().toLowerCase().contains("health")) {
+						&& !problem.getProblemDetails().trim().equals("") && !problem.getInstitution().toLowerCase().contains("health")
+						&& !problem.getSection().toLowerCase().equals("ptr")) {
 					i++;
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
@@ -362,7 +363,8 @@ public class Main implements CommandLineRunner {
 					}
 				} 
 				if(problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
-						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")) {
+						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")
+						&& !problem.getSection().toLowerCase().equals("ptr")) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
