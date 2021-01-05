@@ -6,7 +6,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +24,25 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
 import com.sybit.airtable.Table;
 
 import ca.gc.tbs.domain.Problem;
+import ca.gc.tbs.domain.TopTaskSurvey;
 import ca.gc.tbs.repository.ProblemRepository;
+import ca.gc.tbs.repository.TopTaskRepository;
 import ca.gc.tbs.service.ContentService;
 
 import static java.lang.System.exit;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -42,6 +56,9 @@ public class Main implements CommandLineRunner {
 
 	@Autowired
 	private ProblemRepository problemRepository;
+	
+	@Autowired
+	private TopTaskRepository topTaskRepository;
 
 	private ContentService contentService = new ContentService();
 
@@ -83,6 +100,8 @@ public class Main implements CommandLineRunner {
 	private Airtable healthAirTable;
 	private Base healthBase;
 
+	private HashMap<String, String> modelsByURL = new HashMap<String, String>();
+	
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
 	
@@ -103,6 +122,7 @@ public class Main implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		//this.importModels();
 		this.problemAirTable = new Airtable().configure(this.airtableKey);
 		this.problemBase = this.problemAirTable.base(this.problemAirtableBase);
 		this.healthAirTable = new Airtable().configure(this.airtableKey);
@@ -113,6 +133,7 @@ public class Main implements CommandLineRunner {
 		this.getMLTagIdsProblem();
 		this.getURLLinkIds(problemBase);
 		this.getURLLinkIds(healthBase);
+		this.removePersonalInfoExitSurvey();
 		this.removePersonalInfo();
 		this.autoTag();
 		this.airTableSync();
@@ -175,6 +196,36 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
+        for (Entry<T, E> entry : map.entrySet()) {
+            if (Objects.equals(value, entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+	
+	public void importModels() throws Exception {
+		final Reader reader = new InputStreamReader(new URL(
+				"https://docs.google.com/spreadsheets/d/1lQ6q5AwWPmOdQrJMb5rWgiDu6vQAs16jLolXNuNXnxU/export?format=csv")
+						.openConnection().getInputStream(),
+				"UTF-8");
+		final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+		try {
+			for (final CSVRecord record : parser) {
+				try {
+					modelsByURL.put(record.get("MODEL"), record.get("URL"));			
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		} finally {
+			parser.close();
+			reader.close();
+		}
+	}
+
 	public void autoTag() {
 		List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
 		pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
@@ -199,6 +250,10 @@ public class Main implements CommandLineRunner {
 					 * IF(SEARCH("FIN",{Institution}), "Business", 
 					 * IF(SEARCH("CRA",{Institution}), "Business", 
 					 * IF(SEARCH("Health",{Theme}), "Health") ) ) ) ) ) ) ) */
+//					if(modelsByURL.containsValue(URL)) {
+//						model = getKeyByValue(modelsByURL, URL);
+//						System.out.println("model: " + model);
+//					}
 					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes") || title.contains("health")) {
 						model = "Health";
 					}
@@ -291,6 +346,32 @@ public class Main implements CommandLineRunner {
 				this.problemRepository.save(problem);
 			} catch (Exception e) {
 				System.out.println("Could not process problem:" + problem.getId() + ":" + problem.getProblemDetails());
+			}
+		}
+		System.out.println("Private info removed...");
+	}
+	public void removePersonalInfoExitSurvey() {
+		System.out.println("Starting private info removal...");
+		List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
+		tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
+		for (TopTaskSurvey task : tList) {
+			try {
+				if(task.getTaskOther() != null) {
+					String details = this.contentService.cleanContent(task.getTaskOther());
+					task.setTaskOther(details);
+				}
+				if(task.getTaskImproveComment() != null) {
+					String details = this.contentService.cleanContent(task.getTaskImproveComment());
+					task.setTaskImproveComment(details);
+				}
+				if(task.getTaskWhyNotComment() != null) {
+					String details = this.contentService.cleanContent(task.getTaskWhyNotComment());
+					task.setTaskWhyNotComment(details);
+				}
+				task.setPersonalInfoProcessed("true");
+				this.topTaskRepository.save(task);
+			} catch (Exception e) {
+				System.out.println("Could not process problem:" + task.getId() + ":" + task.getDateTime() + ": " + task.getTaskOther() + " : " + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
 			}
 		}
 		System.out.println("Private info removed...");
