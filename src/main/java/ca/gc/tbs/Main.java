@@ -351,6 +351,7 @@ public class Main implements CommandLineRunner {
 		}
 		System.out.println("Private info removed...");
 	}
+	
 	public void removePersonalInfoExitSurvey() {
 		System.out.println("Starting private info removal...");
 		List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
