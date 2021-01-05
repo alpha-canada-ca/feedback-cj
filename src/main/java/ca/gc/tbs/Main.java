@@ -591,6 +591,14 @@ public class Main implements CommandLineRunner {
 		this.problemRepository = problemRepository;
 	}
 
+	public TopTaskRepository getTopTaskRepository() {
+		return topTaskRepository;
+	}
+
+	public void setTopTaskRepository(TopTaskRepository topTaskRepository) {
+		this.topTaskRepository = topTaskRepository;
+	}
+
 	public ContentService getContentService() {
 		return contentService;
 	}
