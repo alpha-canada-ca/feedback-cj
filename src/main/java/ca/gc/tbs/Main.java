@@ -13,6 +13,8 @@ import java.util.Objects;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +26,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.view.RedirectView;
 
 import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
@@ -45,6 +44,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "ca.gc.tbs.domain", "ca.gc.tbs.repository" })
