@@ -254,7 +254,7 @@ public class Main implements CommandLineRunner {
 //					if(modelsByURL.containsValue(URL)) {
 //						model = getKeyByValue(modelsByURL, URL);
 //						System.out.println("model: " + model);
-//					}
+//					} 
 					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes") || title.contains("health")) {
 						model = "Health";
 					}
