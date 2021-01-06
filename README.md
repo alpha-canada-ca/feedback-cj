@@ -3,7 +3,7 @@
 **Page feedback cronjob:**
 The purpose of this tool is to clean personal info of both the exit survey entries and page feedback entries, apply tags to page feedback entries, and sync the page feedback entries with airtable.
 
-***Anytime changes are made to the domain you will need to:***
+**_Anytime_ changes are made to the domain you will need to:**
   1. Comment out the plugins in the pom.xml file for the Feedback Viewer repository
   2. Run MVN Install on Feedback Viewer repository
   3. Copy the "PageSuccess" jar from the target folder
