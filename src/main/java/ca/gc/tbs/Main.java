@@ -123,11 +123,11 @@ public class Main implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		//this.importModels();
 		this.problemAirTable = new Airtable().configure(this.airtableKey);
 		this.problemBase = this.problemAirTable.base(this.problemAirtableBase);
 		this.healthAirTable = new Airtable().configure(this.airtableKey);
 		this.healthBase = this.healthAirTable.base(this.healthAirtableBase);
+		this.importModels();
 		this.getPageTitleIds(problemBase);
 		this.getPageTitleIds(healthBase);
 		this.getMLTagIdsHealth();
@@ -139,7 +139,6 @@ public class Main implements CommandLineRunner {
 		this.autoTag();
 		this.airTableSync();
 		this.completeProcessing();
-		// testRemovePII();
 		System.out.println("CI/CD Test, this will be removed later...");
 
 	}
@@ -208,14 +207,14 @@ public class Main implements CommandLineRunner {
 	
 	public void importModels() throws Exception {
 		final Reader reader = new InputStreamReader(new URL(
-				"https://docs.google.com/spreadsheets/d/1lQ6q5AwWPmOdQrJMb5rWgiDu6vQAs16jLolXNuNXnxU/export?format=csv")
+				"https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv")
 						.openConnection().getInputStream(),
 				"UTF-8");
 		final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
 		try {
 			for (final CSVRecord record : parser) {
 				try {
-					modelsByURL.put(record.get("MODEL"), record.get("URL"));			
+					modelsByURL.put(record.get("URL"), record.get("MODEL"));			
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
 					e.printStackTrace();
@@ -239,49 +238,13 @@ public class Main implements CommandLineRunner {
 						lang = "fr";
 					}
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
-					String title = problem.getTitle().toLowerCase();
-					String inst = problem.getInstitution().toLowerCase();
-					String sect = problem.getSection().toLowerCase();
 					String URL = problem.getUrl().toLowerCase();
-					/* IF(SEARCH("Symptômes", {Page title}), "Health", 
-					 * IF(SEARCH("Symptoms", {Page title}), "Health", 
-					 * IF(SEARCH("Prevention", {Page title}), "Health", 
-					 * IF( SEARCH("entreprise", {Page title}), "Business", 
-					 * IF(SEARCH("business", {Page title}), "Business", 
-					 * IF(SEARCH("FIN",{Institution}), "Business", 
-					 * IF(SEARCH("CRA",{Institution}), "Business", 
-					 * IF(SEARCH("Health",{Theme}), "Health") ) ) ) ) ) ) ) */
-//					if(modelsByURL.containsValue(URL)) {
-//						model = getKeyByValue(modelsByURL, URL);
-//						System.out.println("model: " + model);
-//					} 
-					if (title.contains("symptoms") || title.contains("prevention") || title.contains("symptômes") || title.contains("health")) {
-						model = "Health";
+
+					if(modelsByURL.containsKey(URL)) {
+						model = modelsByURL.get(URL);
+						System.out.println("model: " + model);
 					}
-					if (title.contains("entreprise") || title.contains("business")) {
-						model = "Business";
-					} 
-					if (inst != null && inst.contains("fin")) {
-						model = "Business";
-					} 
-					if (inst != null && inst.contains("cra")) {
-						model = "Benefits";
-					} 
-					if (sect != null && sect.contains("travel-wizard")) {
-						model = "travel-wizard";
-					} 
-					if (sect != null && sect.contains("vaccines")) {
-						model = "Vaccines";
-					}
-					if(sect != null && sect.contains("arrivecan")) {
-						model = "ArriveCan";
-					}
-					if(URL != null && URL.contains("canadas-response") || URL.contains("response-canada") || URL.contains("prevention-risques.html")) {
-						model = "Health";
-					}
-					
-					// model for Travel, Vaccines
-					
+
 					if (!model.equals("")) {
 						Document doc = Jsoup.connect("https://suggestion.tbs.alpha.canada.ca/suggestCategory?lang="
 								+ lang + "&text=" + text + "&section=" + model).maxBodySize(0).get();
@@ -358,6 +321,10 @@ public class Main implements CommandLineRunner {
 		tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
 		for (TopTaskSurvey task : tList) {
 			try {
+				if(task.getThemeOther() != null) {
+					String details = this.contentService.cleanContent(task.getThemeOther());
+					task.setThemeOther(details);
+				}
 				if(task.getTaskOther() != null) {
 					String details = this.contentService.cleanContent(task.getTaskOther());
 					task.setTaskOther(details);
