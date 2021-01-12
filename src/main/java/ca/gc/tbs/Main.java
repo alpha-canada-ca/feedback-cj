@@ -120,7 +120,8 @@ public class Main implements CommandLineRunner {
 	public Main() throws Exception {
 
 	}
-
+	
+	// Main Loop, Runs all functions needed.
 	@Override
 	public void run(String... args) throws Exception {
 		this.problemAirTable = new Airtable().configure(this.airtableKey);
@@ -143,6 +144,7 @@ public class Main implements CommandLineRunner {
 
 	}
 
+	// Use this function to test removing personal information from a comment after any changes to cleaning code. (test case)
 	public void testRemovePII() {
 		String content = this.contentService.cleanContent("We own our business\n" + "Property\n" + "Need\n"
 				+ "Buss  relate to travel\n" + "And shut  down since March\n"
@@ -153,6 +155,7 @@ public class Main implements CommandLineRunner {
 		System.out.println("Content cleaned." + content);
 	}
 
+	// This function sets problem entries to setAirTableSync="false" after date given to function (not being used)
 	public void syncDataAfter(String date) throws ParseException {
 		Date afterDate = DATE_FORMAT.parse(date);
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
@@ -169,6 +172,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	// This function finds data that has already been ran by airTableSync (not being used)
 	public void flagAlreadyAddedData() {
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
@@ -183,6 +187,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	// Function resets problems that meet if criteria by setting variables to false forcing them to get processed again (not being used)
 	public void resetEverything() {
 		List<Problem> pList = this.problemRepository.findAll();
 		for (Problem problem : pList) {
@@ -196,15 +201,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
-	public static <T, E> T getKeyByValue(Map<T, E> map, E value) {
-        for (Entry<T, E> entry : map.entrySet()) {
-            if (Objects.equals(value, entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-	
+	// This function grabs all the models and associated URLs from the google spreadsheet.
 	public void importModels() throws Exception {
 		final Reader reader = new InputStreamReader(new URL(
 				"https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv")
@@ -226,12 +223,14 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	//This function grabs all problems that have not been assigned auto tags and assigns tags.
 	public void autoTag() {
 		List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
 		pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
 		for (Problem problem : pList) {
 			String model = "";
 			try {
+				// If problem has comment, assign language & model. 
 				if (!problem.getProblemDetails().trim().equals("")) {
 					String lang = "en";
 					if (problem.getLanguage().toLowerCase().equals("fr")) {
@@ -244,7 +243,8 @@ public class Main implements CommandLineRunner {
 						model = modelsByURL.get(URL);
 						System.out.println("model: " + model);
 					}
-
+					// Then feed through the suggestion script (Feedback-Classification-RetroAction Repository) if model exists
+					// and assign tags if applicable.
 					if (!model.equals("")) {
 						Document doc = Jsoup.connect("https://suggestion.tbs.alpha.canada.ca/suggestCategory?lang="
 								+ lang + "&text=" + text + "&section=" + model).maxBodySize(0).get();
@@ -263,6 +263,7 @@ public class Main implements CommandLineRunner {
 
 	}
 
+	// This function marks problems as processed if applicable.
 	public void completeProcessing() {
 		List<Problem> pList = this.problemRepository.findByProcessed("false");
 		pList.addAll(this.problemRepository.findByProcessed(null));
@@ -282,6 +283,7 @@ public class Main implements CommandLineRunner {
 		exit(0);
 	}
 
+	// This function sets AirTableSync value to false for all problems. (not being used)
 	public void resetAirTableFlag() {
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
@@ -290,6 +292,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	// This function sets PersonalInfoProcessed value to true for all problems. (not being used)
 	public void setPrivateFlagForSync() {
 		List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed("false");
 		for (Problem problem : pList) {
@@ -298,6 +301,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	// This function finds problems that have not been cleaned and runs them through the cleaning code (cleanContent in FeedbackViewer repo)
 	public void removePersonalInfo() {
 		System.out.println("Starting private info removal...");
 		List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
@@ -315,6 +319,8 @@ public class Main implements CommandLineRunner {
 		System.out.println("Private info removed...");
 	}
 	
+	// This function finds tasks (Exit Survey) that have not been cleaned and runs them through the cleaning code. 
+	// (cleanContent in FeedbackViewer Repository)
 	public void removePersonalInfoExitSurvey() {
 		System.out.println("Starting private info removal...");
 		List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
@@ -346,12 +352,16 @@ public class Main implements CommandLineRunner {
 		System.out.println("Private info removed...");
 	}
 
+	// This function populates problem entries to AirTable base.
 	public void airTableSync() throws Exception {
+		// Connect to main problem AirTable
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> problemTable = problemBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		// Connect to health problem AirTable
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> healthTable = healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		System.out.println("Connected to Airtable");
+		// Find problems that have not been ran through this function
 		List<Problem> pList = this.problemRepository.findByAirTableSync(null);
 		pList.addAll(this.problemRepository.findByAirTableSync("false"));
 		System.out.println("Connected to MongoDB");
@@ -360,6 +370,7 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
+				// Check if conditions met to go to main AirTable and populate.
 				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") 
 						&& !problem.getProblemDetails().trim().equals("") && !problem.getInstitution().toLowerCase().contains("health")
 						&& !problem.getSection().toLowerCase().equals("ptr")) {
@@ -368,7 +379,6 @@ public class Main implements CommandLineRunner {
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
 					System.out.println(problem.getProblemDate());
-				//	System.out.println(DATE_FORMAT.format(INPUT_FORMAT.parse(problem.getProblemDate())));
 					airProblem.setURL(problem.getUrl());
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), problemBase, airtableURLLink);
@@ -403,15 +413,9 @@ public class Main implements CommandLineRunner {
 					airProblem.setTheme(problem.getTheme());
 					airProblem.setId(null);
 					problemTable.create(airProblem);
-					problem.setAirTableSync("true");
-					this.problemRepository.save(problem);
-					System.out.println("Processed record:"+ i + " Date:"+ airProblem.getDate());
-					
-					if (i >= maxToSync) {
-						System.out.println("Sync only "+ maxToSync +" records at a time...");
-						break;
-					}
+					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				} 
+				// Check if conditions met to go to health AirTable and populate.
 				if(problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
 						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")
 						&& !problem.getSection().toLowerCase().equals("ptr")) {
@@ -450,6 +454,11 @@ public class Main implements CommandLineRunner {
 					airProblem.setTheme(problem.getTheme());
 					airProblem.setId(null);
 					healthTable.create(airProblem);
+					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+				}
+				if (i >= maxToSync) {
+					System.out.println("Sync only "+ maxToSync +" records at a time...");
+					break;
 				}
 				problem.setAirTableSync("true");
 				this.problemRepository.save(problem);
@@ -457,13 +466,12 @@ public class Main implements CommandLineRunner {
 				
 				System.out.println(
 						e.getMessage() + " Could not sync record: " + problem.getId() + " URL:" + problem.getUrl());
-				//this.problemRepository.delete(problem);
 
 			}
 		}
-		//System.out.println("Synced records:" + i );
 	}
 
+	// This function grabs Page feedback statistics page IDs and adds them to a hashmap for their respective AirTable (main or health)
 	private void getPageTitleIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
@@ -476,6 +484,8 @@ public class Main implements CommandLineRunner {
 				this.healthPageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
 		}
 	}
+	
+	// This function grabs Page groups by URL and adds them to a hashmap for their respective AirTable (main or health)
 	private void getURLLinkIds(Base b) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableURLLink> urlLinkTable = b.table(this.airtableURLLink, AirTableURLLink.class);
@@ -497,6 +507,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	// This function grabs ML Tags and adds them to a hashmap for the health AirTable
 	private void getMLTagIdsHealth() throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableMLTag> tagsTable = healthBase.table(healthAirtableMLTags, AirTableMLTag.class);
@@ -510,6 +521,8 @@ public class Main implements CommandLineRunner {
 			}
 		}
 	}
+	
+	// This function grabs ML Tags and adds them to a hashmap for the main AirTable
 	private void getMLTagIdsProblem() throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableMLTag> tagsTable = problemBase.table(airtableMLTags, AirTableMLTag.class);
@@ -524,6 +537,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
+	//Creates records for new titles
 	private void createPageTitleEntry(String title, Base base, String pageTitle) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable = base.table(pageTitle, AirTableStat.class);
@@ -537,7 +551,7 @@ public class Main implements CommandLineRunner {
 		}
 		System.out.println("Created record for title");
 	}
-
+	 //Creates records for new URLs
 	 private void createUrlLinkEntry(String url, Base base, String pageTitle) throws Exception {
 		 @SuppressWarnings("unchecked")
 			Table<AirTableURLLink> urlLinkTable = base.table(pageTitle, AirTableURLLink.class);
