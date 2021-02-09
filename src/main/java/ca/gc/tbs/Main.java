@@ -384,7 +384,7 @@ public class Main implements CommandLineRunner {
 		pList.addAll(this.problemRepository.findByAirTableSync("false"));
 		System.out.println("Connected to MongoDB");
 		System.out.println("Found " + pList.size() + " records that need to be added.");
-		int i = 0;
+		int i = 1;
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
@@ -575,20 +575,6 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
-	// This function grabs ML Tags and adds them to a hashmap for the health AirTable
-//	private void getMLTagIdsHealth() throws Exception {
-//		@SuppressWarnings("unchecked")
-//		Table<AirTableMLTag> tagsTable = healthBase.table(healthAirtableMLTags, AirTableMLTag.class);
-//		System.out.println("Connected to Airtable Stats");
-//		List<AirTableMLTag> tags = tagsTable.select();
-//		for (AirTableMLTag tag : tags) {
-//			try {
-//				this.healthMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
-//			} catch (Exception e) {
-//				System.out.println("Could not add Health ML tag because:" + e.getMessage());
-//			}
-//		}
-//	}
 	
 	// This function grabs ML Tags and adds them to a hashmap for the main AirTable
 	private void getMLTagIds(Base base) throws Exception {
