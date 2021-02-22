@@ -102,7 +102,8 @@ public class Main implements CommandLineRunner {
 	private Base healthBase;
 	private Base CRA_Base;
 
-	private HashMap<String, String> modelsByURL = new HashMap<String, String>();
+	private HashMap<String, String[]> modelBaseByURL = new HashMap<String, String[]>();
+	
 	
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
@@ -115,6 +116,38 @@ public class Main implements CommandLineRunner {
 	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_MlTagIds = new HashMap<String, String>();
+	
+	
+	public HashMap<String, String> selectMapPageTitleIds(Base base) {
+		  if(base.equals(problemBase))
+		    return this.problemPageTitleIds;
+		  if(base.equals(healthBase))
+		    return this.healthPageTitleIds;
+		  if(base.equals(CRA_Base))
+		    return this.CRA_PageTitleIds;
+		  return null;
+	} 
+	
+	public HashMap<String, String> selectMapUrlLinkIds(Base base) {
+		  if(base.equals(problemBase))
+		    return this.problemUrlLinkIds;
+		  if(base.equals(healthBase))
+		    return this.healthUrlLinkIds;
+		  if(base.equals(CRA_Base))
+		    return this.CRA_UrlLinkIds;
+		  return null;
+	} 
+	public HashMap<String, String> selectMapMLTagIds(Base base) {
+		  if(base.equals(problemBase))
+		    return this.problemMlTagIds;
+		  if(base.equals(healthBase))
+		    return this.healthMlTagIds;
+		  if(base.equals(CRA_Base))
+		    return this.CRA_MlTagIds;
+		  return null;
+	} 
+	
+
 
 	public static void main(String args[]) throws Exception {
 		new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
@@ -221,7 +254,8 @@ public class Main implements CommandLineRunner {
 		try {
 			for (final CSVRecord record : parser) {
 				try {
-					modelsByURL.put(record.get("URL"), record.get("MODEL"));			
+					String[] modelBase = {record.get("MODEL"), record.get("BASE")};
+					modelBaseByURL.put(record.get("URL"), modelBase);			
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
 					e.printStackTrace();
@@ -249,8 +283,8 @@ public class Main implements CommandLineRunner {
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
 					String URL = problem.getUrl().toLowerCase();
 
-					if(modelsByURL.containsKey(URL)) {
-						model = modelsByURL.get(URL);
+					if(modelBaseByURL.containsKey(URL)) {
+						model = modelBaseByURL.get(URL)[0];
 						System.out.println("model: " + model);
 					}
 					// Then feed through the suggestion script (Feedback-Classification-RetroAction Repository) if model exists
@@ -537,16 +571,13 @@ public class Main implements CommandLineRunner {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
 		System.out.println("Connected to Airtable Stats");
-		List<AirTableStat> stats = statsTable.select();
-		for (AirTableStat stat : stats) {
-			if(base.equals(problemBase))
-				this.problemPageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
-			if(base.equals(healthBase))
-				this.healthPageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
-			if(base.equals(CRA_Base))
-				this.CRA_PageTitleIds.put(stat.getPageTitle().trim().toUpperCase(), stat.getId());
-			//System.out.println("Found page title ID for base: " + base);
-		}
+		List<AirTableStat> stats 	= statsTable.select();
+		HashMap<String, String> m 	= selectMapPageTitleIds(base);
+		stats.forEach(entry -> {try { m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
+	        } catch(Exception e) {
+	        	System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " in base: " + base.name());
+	        }
+	    });
 	}
 	
 	// This function grabs Page groups by URL and adds them to a hashmap for their respective AirTable (main or health)
@@ -555,24 +586,12 @@ public class Main implements CommandLineRunner {
 		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableURLLink> urlLinks = urlLinkTable.select();
-		for (AirTableURLLink url : urlLinks) {
-			try {
-				if(url.getURLlink() == null){}else {
-					if(base.equals(problemBase)) {
-						this.problemUrlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
-					}
-					if(base.equals(healthBase)) {
-						this.healthUrlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
-					}
-					if(base.equals(CRA_Base)) {
-						this.CRA_UrlLinkIds.put(url.getURLlink().trim().toUpperCase(), url.getId());
-					}
-					//System.out.println("Found URLLink for base: " + base);
-				}
-			} catch (Exception e) {
-				System.out.println(e.getMessage()+ " Could not add URL_LINK: " + url.getURLlink() + " ID: " + url.getId() + " in base: " + base);
-			}
-		}
+		HashMap<String, String> m 	= selectMapUrlLinkIds(base);
+		urlLinks.forEach(entry -> {try { m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
+	        } catch(Exception e) {
+	        	System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " in base: " + base.name());
+	        }
+	    });
 	}
 
 	
@@ -582,21 +601,12 @@ public class Main implements CommandLineRunner {
 		Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableMLTag> tags = tagsTable.select();
-		for (AirTableMLTag tag : tags) {
-			try {
-				if(base.equals(problemBase)) {
-					this.problemMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
-				}
-				if(base.equals(healthBase)) {
-					this.healthMlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
-				}
-				if(base.equals(CRA_Base)) {
-					this.CRA_MlTagIds.put(tag.getTag().trim().toUpperCase(), tag.getId());
-				}
-			} catch (Exception e) {
-				System.out.println("Could not add " + base + " ML tag because:" + e.getMessage());
-			}
-		}
+		HashMap<String, String> m 	= selectMapMLTagIds(base);
+		tags.forEach(entry -> {try { m.put(entry.getTag().trim().toUpperCase(), entry.getId());
+	        } catch(Exception e) {
+	        	System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " in base: " + base.name());
+	        }
+	    });
 	}
 
 	//Creates records for new titles
