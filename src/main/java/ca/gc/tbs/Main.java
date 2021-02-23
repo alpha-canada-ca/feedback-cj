@@ -423,9 +423,9 @@ public class Main implements CommandLineRunner {
 		for (Problem problem : pList) {
 			try {
 				// Check if conditions met to go to main AirTable and populate.
-				if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") 
-						&& !problem.getProblemDetails().trim().equals("") && !problem.getInstitution().toLowerCase().contains("health")
-						&& !problem.getSection().toLowerCase().equals("ptr")) {
+				if ((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") 
+						&& !problem.getProblemDetails().trim().equals("")) && (!problem.getInstitution().toLowerCase().contains("health")
+						&& !problem.getSection().toLowerCase().equals("ptr")) || modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
@@ -467,9 +467,9 @@ public class Main implements CommandLineRunner {
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				} 
 				// Check if conditions met to go to health AirTable and populate.
-				if(problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
-						&& problem.getInstitution().toLowerCase().contains("health") && !problem.getProblemDetails().trim().equals("")
-						&& !problem.getSection().toLowerCase().equals("ptr")) {
+				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
+						&& !problem.getProblemDetails().trim().equals("") && !problem.getSection().toLowerCase().equals("ptr"))
+						&& (problem.getInstitution().toLowerCase().equals("health") || modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health"))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
@@ -508,8 +508,8 @@ public class Main implements CommandLineRunner {
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				}
 				// Check if conditions met to go to CRA AirTable and populate.
-				if(problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
-						&& !problem.getProblemDetails().trim().equals("") && problem.getSection().toLowerCase().equals("ptr")) {
+				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("")) 
+						&& (problem.getSection().toLowerCase().equals("ptr") || modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra"))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
