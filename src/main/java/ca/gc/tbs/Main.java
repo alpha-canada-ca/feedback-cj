@@ -98,7 +98,7 @@ public class Main implements CommandLineRunner {
 
 	private Airtable AirTableKey;
 	
-	private Base problemBase;
+	private Base mainBase;
 	private Base healthBase;
 	private Base CRA_Base;
 
@@ -119,7 +119,7 @@ public class Main implements CommandLineRunner {
 	
 	
 	public HashMap<String, String> selectMapPageTitleIds(Base base) {
-		  if(base.equals(problemBase))
+		  if(base.equals(mainBase))
 		    return this.problemPageTitleIds;
 		  if(base.equals(healthBase))
 		    return this.healthPageTitleIds;
@@ -129,7 +129,7 @@ public class Main implements CommandLineRunner {
 	} 
 	
 	public HashMap<String, String> selectMapUrlLinkIds(Base base) {
-		  if(base.equals(problemBase))
+		  if(base.equals(mainBase))
 		    return this.problemUrlLinkIds;
 		  if(base.equals(healthBase))
 		    return this.healthUrlLinkIds;
@@ -138,7 +138,7 @@ public class Main implements CommandLineRunner {
 		  return null;
 	} 
 	public HashMap<String, String> selectMapMLTagIds(Base base) {
-		  if(base.equals(problemBase))
+		  if(base.equals(mainBase))
 		    return this.problemMlTagIds;
 		  if(base.equals(healthBase))
 		    return this.healthMlTagIds;
@@ -163,18 +163,18 @@ public class Main implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		this.AirTableKey = new Airtable().configure(this.airtableKey);
 		
-		this.problemBase = this.AirTableKey.base(this.problemAirtableBase);
+		this.mainBase = this.AirTableKey.base(this.problemAirtableBase);
 		this.healthBase = this.AirTableKey.base(this.healthAirtableBase);
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
 		
 		this.importModels();
-		this.getPageTitleIds(problemBase);
+		this.getPageTitleIds(mainBase);
 		this.getPageTitleIds(healthBase);
 		this.getPageTitleIds(CRA_Base);
-		this.getMLTagIds(problemBase);
+		this.getMLTagIds(mainBase);
 		this.getMLTagIds(healthBase);
 		this.getMLTagIds(CRA_Base);
-		this.getURLLinkIds(problemBase);
+		this.getURLLinkIds(mainBase);
 		this.getURLLinkIds(healthBase);
 		this.getURLLinkIds(CRA_Base);
 		this.removePersonalInfoExitSurvey();
@@ -198,7 +198,7 @@ public class Main implements CommandLineRunner {
 		System.out.println("Content cleaned." + content);
 	}
 
-	// This function sets problem entries to setAirTableSync="false" after date given to function (not being used)
+	// This function sets problem entries to setAirTableSync="false" after date given to function
 	public void syncDataAfter(String date) throws ParseException {
 		Date afterDate = DATE_FORMAT.parse(date);
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
@@ -215,7 +215,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
-	// This function finds data that has already been ran by airTableSync (not being used)
+	// This function finds data that has already been ran by airTableSync and sets processed values to true (not in use)
 	public void flagAlreadyAddedData() {
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
@@ -405,7 +405,7 @@ public class Main implements CommandLineRunner {
 	public void airTableSync() throws Exception {
 		// Connect to main problem AirTable
 		@SuppressWarnings("unchecked")
-		Table<AirTableProblemEnhanced> problemTable = problemBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		Table<AirTableProblemEnhanced> problemTable = mainBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		// Connect to health problem AirTable
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> healthTable = healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
@@ -425,19 +425,19 @@ public class Main implements CommandLineRunner {
 				// Check if conditions met to go to main AirTable and populate.
 				if ((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("")) 
 						&& ((!problem.getInstitution().toLowerCase().contains("health") && !problem.getSection().toLowerCase().equals("ptr")))
-						|| modelBaseByURL.get(problem.getUrl())[1].equals("main")) {
+						|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main"))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
 					System.out.println(problem.getProblemDate());
 					airProblem.setURL(problem.getUrl());
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-						this.createUrlLinkEntry(problem.getUrl(), problemBase, airtableURLLink);
+						this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
 					}
 					
 					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-						this.createPageTitleEntry(problem.getTitle(), problemBase, airtablePageTitleLookup);
+						this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
 					}
 					
 					airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
@@ -467,9 +467,8 @@ public class Main implements CommandLineRunner {
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				} 
 				// Check if conditions met to go to health AirTable and populate.
-				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
-						&& !problem.getProblemDetails().trim().equals("") && !problem.getSection().toLowerCase().equals("ptr"))
-						&& (problem.getInstitution().toLowerCase().contains("health") || modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health"))) {
+				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("") && !problem.getSection().toLowerCase().equals("ptr"))
+						&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
@@ -509,7 +508,7 @@ public class Main implements CommandLineRunner {
 				}
 				// Check if conditions met to go to CRA AirTable and populate.
 				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("")) 
-						&& (problem.getSection().toLowerCase().equals("ptr") || modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra"))) {
+						&& (problem.getSection().toLowerCase().equals("ptr") || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					airProblem.setUniqueID(problem.getId());
 					airProblem.setDate(problem.getProblemDate());
@@ -615,7 +614,7 @@ public class Main implements CommandLineRunner {
 		Table<AirTableStat> statsTable = base.table(pageTitle, AirTableStat.class);
 		AirTableStat stat = new AirTableStat(title.trim());
 		stat = statsTable.create(stat);
-		if(base.equals(problemBase)) {
+		if(base.equals(mainBase)) {
 			this.problemPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
 		}
 		if(base.equals(healthBase)) {
@@ -632,7 +631,7 @@ public class Main implements CommandLineRunner {
 			Table<AirTableURLLink> urlLinkTable = base.table(pageTitle, AirTableURLLink.class);
 			AirTableURLLink urlLink = new AirTableURLLink(url.trim());
 			urlLink = urlLinkTable.create(urlLink);
-			if(base.equals(problemBase)) {
+			if(base.equals(mainBase)) {
 				this.problemUrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
 			}
 			if(base.equals(healthBase)) {
