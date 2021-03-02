@@ -6,14 +6,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -44,8 +40,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "ca.gc.tbs.domain", "ca.gc.tbs.repository" })
@@ -90,12 +84,6 @@ public class Main implements CommandLineRunner {
 	@Value("${cra.airtable.base}")
 	private String CRA_AirtableBase;
 
-	
-	
-	
-
-	
-
 	private Airtable AirTableKey;
 	
 	private Base mainBase;
@@ -103,7 +91,6 @@ public class Main implements CommandLineRunner {
 	private Base CRA_Base;
 
 	private HashMap<String, String[]> modelBaseByURL = new HashMap<String, String[]>();
-	
 	
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
@@ -116,7 +103,6 @@ public class Main implements CommandLineRunner {
 	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_MlTagIds = new HashMap<String, String>();
-	
 	
 	public HashMap<String, String> selectMapPageTitleIds(Base base) {
 		  if(base.equals(mainBase))
@@ -147,8 +133,6 @@ public class Main implements CommandLineRunner {
 		  return null;
 	} 
 	
-
-
 	public static void main(String args[]) throws Exception {
 		new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
 				.run(args);
@@ -168,23 +152,24 @@ public class Main implements CommandLineRunner {
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
 		
 		this.importModels();
+		
 		this.getPageTitleIds(mainBase);
 		this.getPageTitleIds(healthBase);
 		this.getPageTitleIds(CRA_Base);
+		
 		this.getMLTagIds(mainBase);
 		this.getMLTagIds(healthBase);
 		this.getMLTagIds(CRA_Base);
+		
 		this.getURLLinkIds(mainBase);
 		this.getURLLinkIds(healthBase);
 		this.getURLLinkIds(CRA_Base);
+		
 		this.removePersonalInfoExitSurvey();
 		this.removePersonalInfo();
 		this.autoTag();
 		this.airTableSync();
 		this.completeProcessing();
-		
-		System.out.println("CI/CD Test, this will be removed later...");
-
 	}
 
 	// Use this function to test removing personal information from a comment after any changes to cleaning code. (test case)
@@ -395,23 +380,22 @@ public class Main implements CommandLineRunner {
 				task.setPersonalInfoProcessed("true");
 				this.topTaskRepository.save(task);
 			} catch (Exception e) {
-				System.out.println("Could not process problem:" + task.getId() + ":" + task.getDateTime() + ": " + task.getTaskOther() + " : " + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
+				System.out.println("Could not process task: " + task.getId() + " : " + task.getDateTime() + " : " + task.getTaskOther() + " : " + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
 			}
 		}
 		System.out.println("Private info removed...");
 	}
 
+
 	// This function populates problem entries to AirTable base.
 	public void airTableSync() throws Exception {
-		// Connect to main problem AirTable
+		// Connect to AirTable bases
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> problemTable = mainBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-		// Connect to health problem AirTable
 		@SuppressWarnings("unchecked")
-		Table<AirTableProblemEnhanced> healthTable = healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-		// Connect to CRA problem AirTable
+		Table<AirTableProblemEnhanced> healthTable 	= healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		@SuppressWarnings("unchecked")
-		Table<AirTableProblemEnhanced> craTable = CRA_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		Table<AirTableProblemEnhanced> craTable 	= CRA_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		System.out.println("Connected to Airtable");
 		// Find problems that have not been ran through this function
 		List<Problem> pList = this.problemRepository.findByAirTableSync(null);
@@ -427,25 +411,15 @@ public class Main implements CommandLineRunner {
 						&& ((!problem.getInstitution().toLowerCase().contains("health") && !problem.getSection().toLowerCase().equals("ptr")))
 						|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main"))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUniqueID(problem.getId());
-					airProblem.setDate(problem.getProblemDate());
-					System.out.println(problem.getProblemDate());
-					airProblem.setURL(problem.getUrl());
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
 					}
-					
 					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
 					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
 						this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
 					}
-					
 					airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-					airProblem.setLang(problem.getLanguage().toUpperCase());
-					airProblem.setWhatswrong(problem.getProblem());
-					airProblem.setComment(problem.getProblemDetails());
-					airProblem.setIgnore(null);
-					
+
 					for (String tag : problem.getTags()) {
 						if (this.problemMlTagIds.containsKey(tag.trim().toUpperCase())) {
 							airProblem.getTags().add(this.problemMlTagIds.get(tag.trim().toUpperCase()));
@@ -453,16 +427,7 @@ public class Main implements CommandLineRunner {
 							System.out.println("Missing tag id for:" + tag);
 						}
 					}  
-					airProblem.setTagsConfirmed(null);
-					airProblem.setRefiningDetails("");
-					airProblem.setActionable(null);
-					airProblem.setMainSection(problem.getSection());
-				
-					airProblem.setStatus("New");
-					airProblem.setLookupTags(null);
-					airProblem.setInstitution(problem.getInstitution());
-					airProblem.setTheme(problem.getTheme());
-					airProblem.setId(null);
+					setAirProblemAttributes(airProblem, problem);
 					problemTable.create(airProblem);
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				} 
@@ -470,9 +435,7 @@ public class Main implements CommandLineRunner {
 				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("") && !problem.getSection().toLowerCase().equals("ptr"))
 						&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUniqueID(problem.getId());
-					airProblem.setDate(problem.getProblemDate());
-					airProblem.setURL(problem.getUrl());
+					
 					if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
 					}
@@ -481,10 +444,6 @@ public class Main implements CommandLineRunner {
 						this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
 					}
 					airProblem.getPageTitleIds().add(this.healthPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-					airProblem.setLang(problem.getLanguage().toUpperCase());
-					airProblem.setWhatswrong(problem.getProblem());
-					airProblem.setComment(problem.getProblemDetails());
-					airProblem.setIgnore(null);
 					
 					for (String tag : problem.getTags()) {
 						if (this.healthMlTagIds.containsKey(tag.trim().toUpperCase())) {
@@ -493,16 +452,7 @@ public class Main implements CommandLineRunner {
 							System.out.println("Missing tag id for:" + tag);
 						}
 					} 
-					airProblem.setTagsConfirmed(null);
-					airProblem.setRefiningDetails("");
-					airProblem.setActionable(null);
-					airProblem.setMainSection(problem.getSection());
-			
-					airProblem.setStatus("New");
-					airProblem.setLookupTags(null);
-					airProblem.setInstitution(problem.getInstitution());
-					airProblem.setTheme(problem.getTheme());
-					airProblem.setId(null);
+					setAirProblemAttributes(airProblem, problem);
 					healthTable.create(airProblem);
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				}
@@ -510,9 +460,7 @@ public class Main implements CommandLineRunner {
 				if((problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("")) 
 						&& (problem.getSection().toLowerCase().equals("ptr") || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUniqueID(problem.getId());
-					airProblem.setDate(problem.getProblemDate());
-					airProblem.setURL(problem.getUrl());
+					
 					if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
 					}
@@ -524,11 +472,6 @@ public class Main implements CommandLineRunner {
 					}
 					airProblem.getPageTitleIds().add(this.CRA_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
 				
-					airProblem.setLang(problem.getLanguage().toUpperCase());
-					airProblem.setWhatswrong(problem.getProblem());
-					airProblem.setComment(problem.getProblemDetails());
-					airProblem.setIgnore(null);
-					
 					for (String tag : problem.getTags()) {
 						if (this.CRA_MlTagIds.containsKey(tag.trim().toUpperCase())) {
 							airProblem.getTags().add(this.CRA_MlTagIds.get(tag.trim().toUpperCase()));
@@ -536,16 +479,7 @@ public class Main implements CommandLineRunner {
 							System.out.println("Missing tag id for:" + tag);
 						}
 					}  
-					airProblem.setTagsConfirmed(null);
-					airProblem.setRefiningDetails("");
-					airProblem.setActionable(null);
-					airProblem.setMainSection(problem.getSection());
-			
-					airProblem.setStatus("New");
-					airProblem.setLookupTags(null);
-					airProblem.setInstitution(problem.getInstitution());
-					airProblem.setTheme(problem.getTheme());
-					airProblem.setId(null);
+					setAirProblemAttributes(airProblem, problem);
 					craTable.create(airProblem);
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				}
@@ -563,6 +497,24 @@ public class Main implements CommandLineRunner {
 
 			}
 		}
+	}
+	public void setAirProblemAttributes(AirTableProblemEnhanced airProblem, Problem problem ) {
+		airProblem.setUniqueID(problem.getId());
+		airProblem.setDate(problem.getProblemDate());
+		airProblem.setURL(problem.getUrl());
+		airProblem.setLang(problem.getLanguage().toUpperCase());
+		airProblem.setWhatswrong(problem.getProblem());
+		airProblem.setComment(problem.getProblemDetails());
+		airProblem.setIgnore(null);
+		airProblem.setTagsConfirmed(null);
+		airProblem.setRefiningDetails("");
+		airProblem.setActionable(null);
+		airProblem.setMainSection(problem.getSection());
+		airProblem.setStatus("New");
+		airProblem.setLookupTags(null);
+		airProblem.setInstitution(problem.getInstitution());
+		airProblem.setTheme(problem.getTheme());
+		airProblem.setId(null);
 	}
 
 	// This function grabs Page feedback statistics page IDs and adds them to a hashmap for their respective AirTable (main or health)
