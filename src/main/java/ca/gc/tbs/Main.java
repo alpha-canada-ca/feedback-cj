@@ -405,10 +405,10 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				boolean section_is_PTR_or_ITB = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb");
+				boolean sectionCRABASE = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb") || problem.getSection().toLowerCase().equals("ecm");
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
 				// Check if conditions met to go to main AirTable and populate.
-				if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !section_is_PTR_or_ITB)
+				if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !sectionCRABASE)
 						|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -429,10 +429,10 @@ public class Main implements CommandLineRunner {
 					}  
 					setAirProblemAttributes(airProblem, problem);
 					problemTable.create(airProblem);
-					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+					System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
 				} 
 				// Check if conditions met to go to health AirTable and populate.
-				if((problemIsProcessed && !section_is_PTR_or_ITB)
+				if((problemIsProcessed && !sectionCRABASE)
 						&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					
@@ -457,7 +457,7 @@ public class Main implements CommandLineRunner {
 					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 				}
 				// Check if conditions met to go to CRA AirTable and populate.
-				if(problemIsProcessed && (section_is_PTR_or_ITB || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
+				if(problemIsProcessed && (sectionCRABASE || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 					
 					if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
