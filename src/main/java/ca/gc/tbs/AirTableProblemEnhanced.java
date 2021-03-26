@@ -15,6 +15,9 @@ public class AirTableProblemEnhanced {
 	private String date;
 	@SerializedName("URL")
 	private String URL;
+	
+	@SerializedName("UTM URL")
+	private String UTM;
 	@SerializedName("URL_link")
 	private List<String> URLLinkIds = new ArrayList<String>();
 
@@ -152,6 +155,14 @@ public class AirTableProblemEnhanced {
 
 	public void setURL(String uRL) {
 		URL = uRL;
+	}
+
+	public String getUTM() {
+		return UTM;
+	}
+
+	public void setUTM(String uTM) {
+		UTM = uTM;
 	}
 
 	public String getActionable() {
