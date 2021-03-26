@@ -265,8 +265,8 @@ public class Main implements CommandLineRunner {
 						lang = "fr";
 					}
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
-					String URL = problem.getUrl().toLowerCase();
-
+					String URL = removeQueryAfterHTML(problem.getUrl()).toLowerCase();
+					
 					if(modelBaseByURL.containsKey(URL)) {
 						model = modelBaseByURL.get(URL)[0];
 						System.out.println("model: " + model);
@@ -291,6 +291,18 @@ public class Main implements CommandLineRunner {
 
 	}
 
+	public String removeQueryAfterHTML(String url) {
+		String[] arrOfStr 	= url.split("(?<=.html)");
+		return arrOfStr[0];
+	}
+	public String returnQueryAfterHTML(String url) {
+		String[] arrOfStr 	= url.split("(?<=.html)");
+		if(arrOfStr.length == 2) {
+			return arrOfStr[1];
+		}
+		return null;
+	}
+	
 	// This function marks problems as processed if applicable.
 	public void completeProcessing() {
 		List<Problem> pList = this.problemRepository.findByProcessed("false");
@@ -407,10 +419,16 @@ public class Main implements CommandLineRunner {
 			try {
 				boolean sectionCRABASE = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb") || problem.getSection().toLowerCase().equals("ecm");
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
+				
+				String UTM_value = returnQueryAfterHTML(problem.getUrl());
+				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
+				
 				// Check if conditions met to go to main AirTable and populate.
 				if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !sectionCRABASE)
 						|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+					airProblem.setUTM(UTM_value);
+					
 					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
 					}
@@ -427,6 +445,7 @@ public class Main implements CommandLineRunner {
 							System.out.println("Missing tag id for:" + tag);
 						}
 					}  
+					
 					setAirProblemAttributes(airProblem, problem);
 					problemTable.create(airProblem);
 					System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
@@ -435,7 +454,7 @@ public class Main implements CommandLineRunner {
 				if((problemIsProcessed && !sectionCRABASE)
 						&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					
+					airProblem.setUTM(UTM_value);
 					if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
 					}
@@ -459,6 +478,7 @@ public class Main implements CommandLineRunner {
 				// Check if conditions met to go to CRA AirTable and populate.
 				if(problemIsProcessed && (sectionCRABASE || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
 					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+					airProblem.setUTM(UTM_value);
 					
 					if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 						this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
