@@ -36,6 +36,8 @@ jobs:
     - run: |
         docker build -f ./docker/Dockerfile . -t tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
         docker push tbsacr.azurecr.io/feedback-cj:${{ github.sha }}
+        docker build -f ./csv-archive/Dockerfile . -t tbsacr.azurecr.io/feedback-cj/archive-script:${{ github.sha }}
+        docker push tbsacr.azurecr.io/feedback-cj/archive-script:${{ github.sha }}
       
     # Set the target AKS cluster.
     - uses: Azure/aks-set-context@v1
