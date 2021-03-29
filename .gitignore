@@ -2,6 +2,10 @@
 # Compiled class file
 **/*.class
 
+# Secrets
+**/config/
+*.ini
+
 # Log file
 **/**.log
 
