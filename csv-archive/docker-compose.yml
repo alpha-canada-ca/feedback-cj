@@ -1,11 +1,3 @@
-version: '3'
-services:
-  pagesuccess:
-    build: 
-      context: ../
-      dockerfile: $PWD/Dockerfile
-    working_dir: /app
-    command: mvn -X clean spring-boot:run
 services:
   builder:
     image: my_build
@@ -17,5 +9,5 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=10.90.239.72       # IP of nfs server.  This is also where you put any options '-o' in standard option format
+      o: addr=      # IP of nfs server.  This is also where you put any options '-o' in standard option format
       device: ":/opt/compilers/"  # location on nfs server of file/dir you want to mount

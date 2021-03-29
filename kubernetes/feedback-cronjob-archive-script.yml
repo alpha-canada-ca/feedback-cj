@@ -1,0 +1,21 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: feedback-cj-archive-script
+spec:
+  schedule: "0 0 1 * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: feedback-cj-archive-script
+            image: tbsacr.azurecr.io/feedback-cj/archive-script:1.0.0
+            imagePullPolicy: Always
+            resources: 
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+              requests:
+                cpu: 250m
+                memory: 256Mi
