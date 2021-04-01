@@ -423,84 +423,89 @@ public class Main implements CommandLineRunner {
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
 				
-				// Check if conditions met to go to main AirTable and populate.
-				if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !sectionCRABASE)
-						|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")))) {
-					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUTM(UTM_value);
+				if(modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("nobase")) {
+					//do nothing
+				} else {
 					
-					if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-						this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
-					}
-					airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-					if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-						this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
-					}
-					airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-
-					for (String tag : problem.getTags()) {
-						if (this.problemMlTagIds.containsKey(tag.trim().toUpperCase())) {
-							airProblem.getTags().add(this.problemMlTagIds.get(tag.trim().toUpperCase()));
-						} else {
-							System.out.println("Missing tag id for:" + tag);
+					// Check if conditions met to go to main AirTable and populate.
+					if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !sectionCRABASE)
+							|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")))) {
+						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+						airProblem.setUTM(UTM_value);
+						
+						if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+							this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
 						}
-					}  
-					
-					setAirProblemAttributes(airProblem, problem);
-					problemTable.create(airProblem);
-					System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
-				} 
-				// Check if conditions met to go to health AirTable and populate.
-				if((problemIsProcessed && !sectionCRABASE)
-						&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
-					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUTM(UTM_value);
-					if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-						this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
-					}
-					airProblem.getURLLinkIds().add(this.healthUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-					if (!this.healthPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-						this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
-					}
-					airProblem.getPageTitleIds().add(this.healthPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-					
-					for (String tag : problem.getTags()) {
-						if (this.healthMlTagIds.containsKey(tag.trim().toUpperCase())) {
-							airProblem.getTags().add(this.healthMlTagIds.get(tag.trim().toUpperCase()));
-						} else {
-							System.out.println("Missing tag id for:" + tag);
+						airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+						if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+							this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
 						}
+						airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+	
+						for (String tag : problem.getTags()) {
+							if (this.problemMlTagIds.containsKey(tag.trim().toUpperCase())) {
+								airProblem.getTags().add(this.problemMlTagIds.get(tag.trim().toUpperCase()));
+							} else {
+								System.out.println("Missing tag id for:" + tag);
+							}
+						}  
+						
+						setAirProblemAttributes(airProblem, problem);
+						problemTable.create(airProblem);
+						System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
 					} 
-					setAirProblemAttributes(airProblem, problem);
-					healthTable.create(airProblem);
-					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
-				}
-				// Check if conditions met to go to CRA AirTable and populate.
-				if(problemIsProcessed && (sectionCRABASE || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
-					AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-					airProblem.setUTM(UTM_value);
-					
-					if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-						this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
-					}
-					
-					airProblem.getURLLinkIds().add(this.CRA_UrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-					
-					if (!this.CRA_PageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-						this.createPageTitleEntry(problem.getTitle(), CRA_Base, airtablePageTitleLookup);
-					}
-					airProblem.getPageTitleIds().add(this.CRA_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-				
-					for (String tag : problem.getTags()) {
-						if (this.CRA_MlTagIds.containsKey(tag.trim().toUpperCase())) {
-							airProblem.getTags().add(this.CRA_MlTagIds.get(tag.trim().toUpperCase()));
-						} else {
-							System.out.println("Missing tag id for:" + tag);
+					// Check if conditions met to go to health AirTable and populate.
+					if((problemIsProcessed && !sectionCRABASE)
+							&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
+						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+						airProblem.setUTM(UTM_value);
+						if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+							this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
 						}
-					}  
-					setAirProblemAttributes(airProblem, problem);
-					craTable.create(airProblem);
-					System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+						airProblem.getURLLinkIds().add(this.healthUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+						if (!this.healthPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+							this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
+						}
+						airProblem.getPageTitleIds().add(this.healthPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+						
+						for (String tag : problem.getTags()) {
+							if (this.healthMlTagIds.containsKey(tag.trim().toUpperCase())) {
+								airProblem.getTags().add(this.healthMlTagIds.get(tag.trim().toUpperCase()));
+							} else {
+								System.out.println("Missing tag id for:" + tag);
+							}
+						} 
+						setAirProblemAttributes(airProblem, problem);
+						healthTable.create(airProblem);
+						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+					}
+					// Check if conditions met to go to CRA AirTable and populate.
+					if(problemIsProcessed && (sectionCRABASE || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
+						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+						airProblem.setUTM(UTM_value);
+						
+						if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+							this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
+						}
+						
+						airProblem.getURLLinkIds().add(this.CRA_UrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+						
+						if (!this.CRA_PageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+							this.createPageTitleEntry(problem.getTitle(), CRA_Base, airtablePageTitleLookup);
+						}
+						airProblem.getPageTitleIds().add(this.CRA_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+					
+						for (String tag : problem.getTags()) {
+							if (this.CRA_MlTagIds.containsKey(tag.trim().toUpperCase())) {
+								airProblem.getTags().add(this.CRA_MlTagIds.get(tag.trim().toUpperCase()));
+							} else {
+								System.out.println("Missing tag id for:" + tag);
+							}
+						}  
+						setAirProblemAttributes(airProblem, problem);
+						craTable.create(airProblem);
+						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+					}
 				}
 				if (i >= maxToSync) {
 					System.out.println("Sync only "+ maxToSync +" records at a time...");
