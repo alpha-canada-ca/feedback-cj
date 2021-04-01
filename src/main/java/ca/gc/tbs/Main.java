@@ -367,7 +367,7 @@ public class Main implements CommandLineRunner {
 	// This function finds tasks (Exit Survey) that have not been cleaned and runs them through the cleaning code. 
 	// (cleanContent in FeedbackViewer Repository)
 	public void removePersonalInfoExitSurvey() {
-		System.out.println("Starting private info removal...");
+		System.out.println("Starting private info removal TOP TASK...");
 		List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
 		tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
 		for (TopTaskSurvey task : tList) {
@@ -394,7 +394,7 @@ public class Main implements CommandLineRunner {
 				System.out.println("Could not process task: " + task.getId() + " : " + task.getDateTime() + " : " + task.getTaskOther() + " : " + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
 			}
 		}
-		System.out.println("Private info removed...");
+		System.out.println("Private info removed top task...");
 	}
 
 
