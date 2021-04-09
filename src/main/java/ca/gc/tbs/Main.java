@@ -183,7 +183,7 @@ public class Main implements CommandLineRunner {
 	}
 
 	// This function sets problem entries to setAirTableSync="false" after date given to function
-	public void syncDataAfter(String date) throws ParseException {
+	public void reSyncDataAfterDate(String date) throws ParseException {
 		Date afterDate = DATE_FORMAT.parse(date);
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
@@ -227,6 +227,7 @@ public class Main implements CommandLineRunner {
 			}
 		}
 	}
+	
 
 	// This function grabs all the models and associated URLs from the google spreadsheet.
 	public void importModels() throws Exception {
@@ -597,7 +598,7 @@ public class Main implements CommandLineRunner {
 			this.healthPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
 		}
 		if(base.equals(CRA_Base)) {
-			this.CRA_MlTagIds.put(title.trim().toUpperCase(), stat.getId());
+			this.CRA_PageTitleIds.put(title.trim().toUpperCase(), stat.getId());
 		}
 		//System.out.println("Created record for title in base: " + base);
 	}
