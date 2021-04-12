@@ -606,30 +606,22 @@ public class Main implements CommandLineRunner {
 	//Creates records for new titles
 	private void createPageTitleEntry(String title, Base base, String pageTitle) throws Exception {
 		@SuppressWarnings("unchecked")
-		Table<AirTableStat> statsTable = base.table(pageTitle, AirTableStat.class);
-		AirTableStat stat = new AirTableStat(title.trim());
-		stat = statsTable.create(stat);
-		HashMap<String, String> pageTitleIdMap 	= selectMapPageTitleIds(base);
-		pageTitleIdMap.put(title.trim().toUpperCase(), stat.getId());
+		Table<AirTableStat> statsTable 				= base.table(pageTitle, AirTableStat.class);
+		AirTableStat stat 							= new AirTableStat(title.trim());
+		stat 										= statsTable.create(stat);
+		HashMap<String, String> basePageTitleMap 	= selectMapPageTitleIds(base);
+		basePageTitleMap.put(title.trim().toUpperCase(), stat.getId());
 	}
 	
 	 //Creates records for new URLs
 	 private void createUrlLinkEntry(String url, Base base, String pageTitle) throws Exception {
 		 @SuppressWarnings("unchecked")
-			Table<AirTableURLLink> urlLinkTable = base.table(pageTitle, AirTableURLLink.class);
-			AirTableURLLink urlLink = new AirTableURLLink(url.trim());
-			urlLink = urlLinkTable.create(urlLink);
-			if(base.equals(mainBase)) {
-				this.problemUrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
-			}
-			if(base.equals(healthBase)) {
-				this.healthUrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
-			}
-			if(base.equals(CRA_Base)) {
-				this.CRA_UrlLinkIds.put(url.trim().toUpperCase(), urlLink.getId());
-			}
-			//System.out.println("Created record for title in base: " + base);
-	} 
+		Table<AirTableURLLink> urlLinkTable 		= base.table(pageTitle, AirTableURLLink.class);
+		AirTableURLLink urlLink 					= new AirTableURLLink(url.trim());
+		urlLink 									= urlLinkTable.create(urlLink);
+		HashMap<String, String> baseURLMap 			= selectMapUrlLinkIds(base);
+		baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
+} 
 
 	public ProblemRepository getProblemRepository() {
 		return problemRepository;
