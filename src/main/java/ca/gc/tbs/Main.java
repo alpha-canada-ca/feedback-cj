@@ -426,6 +426,9 @@ public class Main implements CommandLineRunner {
 		Table<AirTableProblemEnhanced> healthTable 	= healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> craTable 	= CRA_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		@SuppressWarnings("unchecked")
+		Table<AirTableProblemEnhanced> travelTable 	= travelBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		
 		System.out.println("Connected to Airtable");
 		// Find problems that have not been ran through this function
 		List<Problem> pList = this.problemRepository.findByAirTableSync(null);
@@ -474,7 +477,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
 					} 
 					// Check if conditions met to go to health AirTable and populate.
-					if((problemIsProcessed && !sectionCRABASE)
+					if((problemIsProcessed && !sectionCRABASE) && (modelBaseByURL.get(problem.getUrl()) != null && !modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel"))
 							&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
@@ -523,6 +526,33 @@ public class Main implements CommandLineRunner {
 						}  
 						setAirProblemAttributes(airProblem, problem);
 						craTable.create(airProblem);
+						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+					}
+					
+					if(problemIsProcessed && (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel"))) {
+						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+						airProblem.setUTM(UTM_value);
+						
+						if (!this.travelUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+							this.createUrlLinkEntry(problem.getUrl(), travelBase, airtableURLLink);
+						}
+						
+						airProblem.getURLLinkIds().add(this.travelUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+						
+						if (!this.travelPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+							this.createPageTitleEntry(problem.getTitle(), travelBase, airtablePageTitleLookup);
+						}
+						airProblem.getPageTitleIds().add(this.travelPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+					
+						for (String tag : problem.getTags()) {
+							if (this.travelMlTagIds.containsKey(tag.trim().toUpperCase())) {
+								airProblem.getTags().add(this.travelMlTagIds.get(tag.trim().toUpperCase()));
+							} else {
+								System.out.println("Missing tag id for:" + tag);
+							}
+						}  
+						setAirProblemAttributes(airProblem, problem);
+						travelTable.create(airProblem);
 						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
 					}
 				}
