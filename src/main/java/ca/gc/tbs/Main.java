@@ -83,26 +83,34 @@ public class Main implements CommandLineRunner {
 	// CRA AirTable
 	@Value("${cra.airtable.base}")
 	private String CRA_AirtableBase;
+	
+	// Travel AirTable
+	@Value("${travel.airtable.base}")
+	private String travelAirtableBase;
 
 	private Airtable AirTableKey;
 	
 	private Base mainBase;
 	private Base healthBase;
 	private Base CRA_Base;
+	private Base travelBase;
 
 	private HashMap<String, String[]> modelBaseByURL = new HashMap<String, String[]>();
 	
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_PageTitleIds = new HashMap<String, String>();
+	private HashMap<String, String> travelPageTitleIds = new HashMap<String, String>();
 	
 	private HashMap<String, String> problemUrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> healthUrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_UrlLinkIds = new HashMap<String, String>();
+	private HashMap<String, String> travelUrlLinkIds = new HashMap<String, String>();
 	
 	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_MlTagIds = new HashMap<String, String>();
+	private HashMap<String, String> travelMlTagIds = new HashMap<String, String>();
 	
 	public HashMap<String, String> selectMapPageTitleIds(Base base) {
 		  if(base.equals(mainBase))
@@ -111,6 +119,8 @@ public class Main implements CommandLineRunner {
 		    return this.healthPageTitleIds;
 		  if(base.equals(CRA_Base))
 		    return this.CRA_PageTitleIds;
+		  if(base.equals(travelBase))
+			    return this.travelPageTitleIds;
 		  return null;
 	} 
 	
@@ -121,6 +131,8 @@ public class Main implements CommandLineRunner {
 		    return this.healthUrlLinkIds;
 		  if(base.equals(CRA_Base))
 		    return this.CRA_UrlLinkIds;
+		  if(base.equals(travelBase))
+			  return this.travelUrlLinkIds;
 		  return null;
 	} 
 	public HashMap<String, String> selectMapMLTagIds(Base base) {
@@ -130,6 +142,8 @@ public class Main implements CommandLineRunner {
 		    return this.healthMlTagIds;
 		  if(base.equals(CRA_Base))
 		    return this.CRA_MlTagIds;
+		  if(base.equals(travelBase))
+			  return this.travelMlTagIds;
 		  return null;
 	} 
 	
@@ -150,19 +164,23 @@ public class Main implements CommandLineRunner {
 		this.mainBase = this.AirTableKey.base(this.problemAirtableBase);
 		this.healthBase = this.AirTableKey.base(this.healthAirtableBase);
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
+		this.travelBase = this.AirTableKey.base(this.travelAirtableBase);
 		
 		this.importModels();
 		this.getPageTitleIds(mainBase);
 		this.getPageTitleIds(healthBase);
 		this.getPageTitleIds(CRA_Base);
+		this.getPageTitleIds(travelBase);
 		
 		this.getMLTagIds(mainBase);
 		this.getMLTagIds(healthBase);
 		this.getMLTagIds(CRA_Base);
+		this.getMLTagIds(travelBase);
 		
 		this.getURLLinkIds(mainBase);
 		this.getURLLinkIds(healthBase);
 		this.getURLLinkIds(CRA_Base);
+		this.getURLLinkIds(travelBase);
 		
 		this.removePersonalInfoExitSurvey();
 		this.removePersonalInfo();
