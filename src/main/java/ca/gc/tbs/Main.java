@@ -609,17 +609,10 @@ public class Main implements CommandLineRunner {
 		Table<AirTableStat> statsTable = base.table(pageTitle, AirTableStat.class);
 		AirTableStat stat = new AirTableStat(title.trim());
 		stat = statsTable.create(stat);
-		if(base.equals(mainBase)) {
-			this.problemPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
-		}
-		if(base.equals(healthBase)) {
-			this.healthPageTitleIds.put(title.trim().toUpperCase(), stat.getId());
-		}
-		if(base.equals(CRA_Base)) {
-			this.CRA_PageTitleIds.put(title.trim().toUpperCase(), stat.getId());
-		}
-		//System.out.println("Created record for title in base: " + base);
+		HashMap<String, String> pageTitleIdMap 	= selectMapPageTitleIds(base);
+		pageTitleIdMap.put(title.trim().toUpperCase(), stat.getId());
 	}
+	
 	 //Creates records for new URLs
 	 private void createUrlLinkEntry(String url, Base base, String pageTitle) throws Exception {
 		 @SuppressWarnings("unchecked")
