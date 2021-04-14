@@ -439,14 +439,12 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				//boolean sectionCRABASE = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb") || problem.getSection().toLowerCase().equals("ecm");
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
-				
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
 				
 				if(modelBaseByURL.get(problem.getUrl()) == null) {
-					//do nothing
+					System.out.println("url not in spreadsheet " + problem.getUrl());
 				} else {
 					
 					// Check if conditions met to go to main AirTable and populate.
@@ -556,9 +554,6 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record : "+ i + " For Travel, Date: "+ airProblem.getDate());
 						problem.setAirTableSync("true");
 					}
-				}
-				if(problem.getAirTableSync().equals("false")) {
-					System.out.println("url not in spreadsheet " + problem.getUrl());
 				}
 				if (i >= maxToSync) {
 					System.out.println("Sync only "+ maxToSync +" records at a time...");
