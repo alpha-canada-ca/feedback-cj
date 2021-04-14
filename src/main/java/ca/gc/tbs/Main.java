@@ -11,7 +11,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -440,22 +439,20 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				boolean sectionCRABASE = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb") || problem.getSection().toLowerCase().equals("ecm");
+				//boolean sectionCRABASE = problem.getSection().toLowerCase().equals("ptr") || problem.getSection().toLowerCase().equals("itb") || problem.getSection().toLowerCase().equals("ecm");
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
 				
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
 				
-				if(modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("nobase")) {
+				if(modelBaseByURL.get(problem.getUrl()) == null) {
 					//do nothing
 				} else {
 					
 					// Check if conditions met to go to main AirTable and populate.
-					if (problemIsProcessed && ((!problem.getInstitution().toLowerCase().contains("health") && !sectionCRABASE)
-							|| (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")))) {
+					if (problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
-						
 						if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
 							this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
 						}
@@ -475,11 +472,11 @@ public class Main implements CommandLineRunner {
 						
 						setAirProblemAttributes(airProblem, problem);
 						problemTable.create(airProblem);
-						System.out.println("# of processed records: "+ i + " Date: "+ airProblem.getDate());
+						problem.setAirTableSync("true");
+						System.out.println("Processed record: "+ i + " For Main, Date: "+ airProblem.getDate());
 					} 
 					// Check if conditions met to go to health AirTable and populate.
-					if((problemIsProcessed && !sectionCRABASE) && (modelBaseByURL.get(problem.getUrl()) != null && !modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel"))
-							&& (problem.getInstitution().toLowerCase().contains("health") || ( modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")))) {
+					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -500,10 +497,11 @@ public class Main implements CommandLineRunner {
 						} 
 						setAirProblemAttributes(airProblem, problem);
 						healthTable.create(airProblem);
-						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+						problem.setAirTableSync("true");
+						System.out.println("Processed record: "+ i + " For Health, Date: "+ airProblem.getDate());
 					}
 					// Check if conditions met to go to CRA AirTable and populate.
-					if(problemIsProcessed && (sectionCRABASE || (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")))) {
+					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
@@ -527,10 +525,11 @@ public class Main implements CommandLineRunner {
 						}  
 						setAirProblemAttributes(airProblem, problem);
 						craTable.create(airProblem);
-						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+						problem.setAirTableSync("true");
+						System.out.println("Processed record: "+ i + " For CRA, Date: "+ airProblem.getDate());
 					}
 					
-					if(problemIsProcessed && (modelBaseByURL.get(problem.getUrl()) != null && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel"))) {
+					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
@@ -554,15 +553,18 @@ public class Main implements CommandLineRunner {
 						}  
 						setAirProblemAttributes(airProblem, problem);
 						travelTable.create(airProblem);
-						System.out.println("Processed record: "+ i + " Date: "+ airProblem.getDate());
+						System.out.println("Processed record : "+ i + " For Travel, Date: "+ airProblem.getDate());
+						problem.setAirTableSync("true");
 					}
+				}
+				if(problem.getAirTableSync().equals("false")) {
+					System.out.println("url not in spreadsheet " + problem.getUrl());
 				}
 				if (i >= maxToSync) {
 					System.out.println("Sync only "+ maxToSync +" records at a time...");
 					break;
 				}
 				i++;
-				problem.setAirTableSync("true");
 				this.problemRepository.save(problem);
 			} catch (Exception e) {
 				
