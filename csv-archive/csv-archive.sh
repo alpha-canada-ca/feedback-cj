@@ -1,6 +1,8 @@
 #!/bin/s
-older_Than_x_Days=$(date --date="83 days ago" +%F)
-mongoexport --uri="mongodb uri link" --collection=problem -q='{ "problemDate": { "$lte" : "'"$older_Than_x_Days"'"}}' --type=csv --out=text2.csv --fields=problemDate,problemDetails,problem,tags,url,language,institution,section,theme
+ls
+older_Than_x_Days=$(date --date="55 days ago" +%F)
+mongoexport --uri=$mongo_db_uri --collection=problem -q='{ "problemDate": { "$lte" : "'"$older_Than_x_Days"'"}}' --type=csv --out=text2.csv --fields=problemDate,problemDetails,problem,tags,url,language,institution,section,theme
+ls
 sed -i '' \
   -Ee 's/[][]//g' \
   -e "1s/problemDate/Date/g" \
