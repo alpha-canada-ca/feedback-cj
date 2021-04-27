@@ -5,7 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -95,8 +97,11 @@ public class Main implements CommandLineRunner {
 	private Base CRA_Base;
 	private Base travelBase;
 
-	private HashMap<String, String[]> modelBaseByURL = new HashMap<String, String[]>();
-	
+	// Tier 2 entries do not populate to AirTable. 
+	private Set<String> tier2Spreadsheet = new HashSet<String>();
+
+	private HashMap<String, String[]> tier1Spreadsheet = new HashMap<String, String[]>();
+
 	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_PageTitleIds = new HashMap<String, String>();
@@ -166,7 +171,9 @@ public class Main implements CommandLineRunner {
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
 		this.travelBase = this.AirTableKey.base(this.travelAirtableBase);
 		
-		this.importModels();
+		this.importTier1();
+		this.importTier2();
+		
 		this.getPageTitleIds(mainBase);
 		this.getPageTitleIds(healthBase);
 		this.getPageTitleIds(CRA_Base);
@@ -185,7 +192,7 @@ public class Main implements CommandLineRunner {
 		this.removePersonalInfoExitSurvey();
 		this.removePersonalInfo();
 		this.autoTag();
-		this.airTableSync();
+		this.airTableSpreadsheetSync();
 		this.completeProcessing();
 	}
 
@@ -248,7 +255,7 @@ public class Main implements CommandLineRunner {
 	
 
 	// This function grabs all the models and associated URLs from the google spreadsheet.
-	public void importModels() throws Exception {
+	public void importTier1() throws Exception {
 		final Reader reader = new InputStreamReader(new URL(
 				"https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv")
 						.openConnection().getInputStream(),
@@ -257,8 +264,28 @@ public class Main implements CommandLineRunner {
 		try {
 			for (final CSVRecord record : parser) {
 				try {
-					String[] modelBase = {record.get("MODEL"), record.get("BASE")};
-					modelBaseByURL.put(record.get("URL"), modelBase);			
+					String[] modelBase = {record.get("MODEL").toLowerCase(), record.get("BASE").toLowerCase()};
+					tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);			
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		} finally {
+			parser.close();
+			reader.close();
+		}
+	}
+	public void importTier2() throws Exception {
+		final Reader reader = new InputStreamReader(new URL(
+				"https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv")
+						.openConnection().getInputStream(),
+				"UTF-8");
+		final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+		try {
+			for (final CSVRecord record : parser) {
+				try {
+					tier2Spreadsheet.add(record.get("URL").toLowerCase());			
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
 					e.printStackTrace();
@@ -286,8 +313,8 @@ public class Main implements CommandLineRunner {
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
 					String URL = removeQueryAfterHTML(problem.getUrl()).toLowerCase();
 					
-					if(modelBaseByURL.containsKey(URL)) {
-						model = modelBaseByURL.get(URL)[0];
+					if(tier1Spreadsheet.containsKey(URL)) {
+						model = tier1Spreadsheet.get(URL)[0];
 						System.out.println("model: " + model);
 					}
 					// Then feed through the suggestion script (Feedback-Classification-RetroAction Repository) if model exists
@@ -418,7 +445,7 @@ public class Main implements CommandLineRunner {
 
 
 	// This function populates problem entries to AirTable base.
-	public void airTableSync() throws Exception {
+	public void airTableSpreadsheetSync() throws Exception {
 		// Connect to AirTable bases
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> problemTable = mainBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
@@ -442,13 +469,24 @@ public class Main implements CommandLineRunner {
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
+				if(!problemIsProcessed) { 
+					System.out.println("False value, Skipping entry");
+				}
+				// if tier 1 and tier 2 spreadsheet don't contain URL, add it and set sync to true
+				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
+					System.out.println("url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
+					GoogleSheetsAPI.addEntry(problem.getUrl());
+					problem.setAirTableSync("true");
+				}
+				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
+				else if(tier2Spreadsheet.contains(problem.getUrl())){
+					System.out.println("Tier 2 spreadsheet contains url already: " + problem.getUrl());
+					problem.setAirTableSync("true");
+				}
+				else {
 				
-				if(modelBaseByURL.get(problem.getUrl()) == null) {
-					System.out.println("url not in spreadsheet " + problem.getUrl());
-				} else {
-					
 					// Check if conditions met to go to main AirTable and populate.
-					if (problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("main")) {
+					if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("main")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -474,7 +512,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For Main, Date: "+ airProblem.getDate());
 					} 
 					// Check if conditions met to go to health AirTable and populate.
-					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("health")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("health")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -499,7 +537,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For Health, Date: "+ airProblem.getDate());
 					}
 					// Check if conditions met to go to CRA AirTable and populate.
-					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("cra")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("cra")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
@@ -527,7 +565,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For CRA, Date: "+ airProblem.getDate());
 					}
 					
-					if(problemIsProcessed && modelBaseByURL.get(problem.getUrl())[1].toLowerCase().equals("travel")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("travel")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
