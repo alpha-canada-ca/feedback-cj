@@ -18,5 +18,7 @@ hs_err_pid*
 # Spring Boot files
 **/application.properties
 **/application*.properties
+**/spreadsheetCredentials.json
+**/StoredCredential
 .DS_Store
 
