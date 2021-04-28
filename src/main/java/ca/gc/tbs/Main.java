@@ -264,7 +264,8 @@ public class Main implements CommandLineRunner {
 		try {
 			for (final CSVRecord record : parser) {
 				try {
-					String[] modelBase = {record.get("MODEL").toLowerCase(), record.get("BASE").toLowerCase()};
+					//remove .toLowerCase() for models, they are case sensitive, look for a fix in python code.
+					String[] modelBase = {record.get("MODEL"), record.get("BASE").toLowerCase()};
 					tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);			
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
