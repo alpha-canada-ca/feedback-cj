@@ -467,21 +467,24 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true") && !problem.getProblemDetails().trim().equals("");
+				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
+				boolean emptyComment = problem.getProblemDetails().trim().equals("");
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
-				if(!problemIsProcessed) { 
-					System.out.println("False value, Skipping entry");
+				if(emptyComment) { 
+					System.out.println("Empty Comment: " + emptyComment + ", deleting entry");
+					problemRepository.delete(problem);
 				}
-				// if tier 1 and tier 2 spreadsheet don't contain URL, add it and set sync to true
-				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
-					System.out.println("url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
+				// if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
+				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl().toLowerCase())) {
+					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
 					GoogleSheetsAPI.addEntry(problem.getUrl());
+					tier2Spreadsheet.add(problem.getUrl().toLowerCase());	
 					problem.setAirTableSync("true");
 				}
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
-				else if(tier2Spreadsheet.contains(problem.getUrl())){
-					System.out.println("Tier 2 spreadsheet contains url already: " + problem.getUrl());
+				else if(tier2Spreadsheet.contains(problem.getUrl().toLowerCase())){
+					System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
 					problem.setAirTableSync("true");
 				}
 				else {
