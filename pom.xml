@@ -14,22 +14,60 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<repositories>
-		<repository>
+		<!-- <repository>
 			<id>bintray-maven</id>
 			<name>bintray</name>
 			<url>https://dl.bintray.com/sybit-education/maven/</url>
-		</repository>
+		</repository> -->
 	</repositories>
 	<dependencies>
+		<dependency>
+		    <groupId>com.sybit</groupId>
+		    <artifactId>airtable.java</artifactId>
+		    <version>0.2.2</version>
+		    <scope>system</scope>
+    		<systemPath>${pom.basedir}/lib/airtable.java-0.2.2.jar</systemPath>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>commons-beanutils</groupId>
+		    <artifactId>commons-beanutils</artifactId>
+		    <version>1.9.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>commons-io</groupId>
+		    <artifactId>commons-io</artifactId>
+		    <version>2.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <version>4.5.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20160810</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>1.7.25</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.mashape.unirest</groupId>
+		    <artifactId>unirest-java</artifactId>
+		    <version>1.4.9</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>ca.gc.tbs</groupId>
 			<artifactId>PageSuccess</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sybit</groupId>
-			<artifactId>airtable.java</artifactId>
-			<version>0.2.0</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.google.api-client</groupId>
