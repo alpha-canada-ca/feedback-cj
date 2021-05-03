@@ -366,7 +366,7 @@ public class Main implements CommandLineRunner {
 				System.out.println("Could not mark completed because:" + e.getMessage() + ": ID:" + problem.getId());
 			}
 		}
-		System.out.println("Finished processiing...");
+		System.out.println("Finished processing...");
 		exit(0);
 	}
 
@@ -446,6 +446,7 @@ public class Main implements CommandLineRunner {
 
 
 	// This function populates problem entries to AirTable base.
+	
 	public void airTableSpreadsheetSync() throws Exception {
 		// Connect to AirTable bases
 		@SuppressWarnings("unchecked")
