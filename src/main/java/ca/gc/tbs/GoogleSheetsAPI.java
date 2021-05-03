@@ -38,7 +38,7 @@ public class GoogleSheetsAPI {
 	
 	private static Credential authorize() throws IOException, GeneralSecurityException {
 		
-		InputStream in = GoogleSheetsAPI.class.getResourceAsStream("/credentials.json");
+		InputStream in = GoogleSheetsAPI.class.getResourceAsStream("/spreadsheetCredentials.json");
 
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
 				JacksonFactory.getDefaultInstance(), new InputStreamReader(in)
@@ -88,9 +88,9 @@ public class GoogleSheetsAPI {
 //		
 		//////////////////////////////////////	
 //		
-//		String url = "test";
+//		String url = "https://www.canada.ca/fr/agence-revenu/services/paiements-arc/paiements-particuliers/faire-paiement.html";
 //		addEntry(url);
-		
+//		
 		
 		//////////////////////////////////////
 		//CHANGE VALUES IN SPREADSHEET OF SPECIFIC ENTRY
