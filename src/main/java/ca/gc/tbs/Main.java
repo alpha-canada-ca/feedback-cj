@@ -649,7 +649,7 @@ public class Main implements CommandLineRunner {
 	private void getURLLinkIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
-		System.out.println("Connected to Airtable Stats");
+		System.out.println("Connected to Airtable Url Link Table");
 		List<AirTableURLLink> urlLinks = urlLinkTable.select();
 		HashMap<String, String> m 	= selectMapUrlLinkIds(base);
 		urlLinks.forEach(entry -> {try { m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
@@ -664,7 +664,7 @@ public class Main implements CommandLineRunner {
 	private void getMLTagIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
-		System.out.println("Connected to Airtable Stats");
+		System.out.println("Connected to Airtable tags table");
 		List<AirTableMLTag> tags = tagsTable.select();
 		HashMap<String, String> m 	= selectMapMLTagIds(base);
 		tags.forEach(entry -> {try { m.put(entry.getTag().trim().toUpperCase(), entry.getId());
