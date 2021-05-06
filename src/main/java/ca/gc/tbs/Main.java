@@ -471,27 +471,27 @@ public class Main implements CommandLineRunner {
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
 				boolean emptyComment = problem.getProblemDetails().trim().equals("");
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
-				problem.setUrl(removeQueryAfterHTML(problem.getUrl()));
+				problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
 				if(emptyComment) { 
 					System.out.println("Empty Comment: " + emptyComment + ", deleting entry");
 					problemRepository.delete(problem);
 				}
 				// if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
-				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl().toLowerCase())) {
+				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
-					//GoogleSheetsAPI.addEntry(problem.getUrl());
-					//tier2Spreadsheet.add(problem.getUrl().toLowerCase());	
-					//problem.setAirTableSync("true");
+					GoogleSheetsAPI.addEntry(problem.getUrl());
+					tier2Spreadsheet.add(problem.getUrl());	
+					problem.setAirTableSync("true");
 				}
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
-				else if(tier2Spreadsheet.contains(problem.getUrl().toLowerCase())){
+				else if(tier2Spreadsheet.contains(problem.getUrl())){
 					System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
 					problem.setAirTableSync("true");
 				}
 				else {
 				
 					// Check if conditions met to go to main AirTable and populate.
-					if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("main")) {
+					if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -517,7 +517,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For Main, Date: "+ airProblem.getDate());
 					} 
 					// Check if conditions met to go to health AirTable and populate.
-					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("health")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -542,7 +542,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For Health, Date: "+ airProblem.getDate());
 					}
 					// Check if conditions met to go to CRA AirTable and populate.
-					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("cra")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("cra")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
@@ -570,7 +570,7 @@ public class Main implements CommandLineRunner {
 						System.out.println("Processed record: "+ i + " For CRA, Date: "+ airProblem.getDate());
 					}
 					
-					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].toLowerCase().equals("travel")) {
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("travel")) {
 						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
 						airProblem.setUTM(UTM_value);
 						
