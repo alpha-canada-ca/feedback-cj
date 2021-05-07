@@ -482,7 +482,7 @@ public class Main implements CommandLineRunner {
 				//	GoogleSheetsAPI.addEntry(problem.getUrl());
 				//	tier2Spreadsheet.add(problem.getUrl());	
 				// 	problem.setAirTableSync("true");
-				}
+				} 
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
 				else if(tier2Spreadsheet.contains(problem.getUrl())){
 					System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
