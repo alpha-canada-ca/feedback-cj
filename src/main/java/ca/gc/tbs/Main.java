@@ -481,7 +481,7 @@ public class Main implements CommandLineRunner {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
 				//	GoogleSheetsAPI.addEntry(problem.getUrl());
 				//	tier2Spreadsheet.add(problem.getUrl());	
-				//	problem.setAirTableSync("true");
+				// 	problem.setAirTableSync("true");
 				}
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
 				else if(tier2Spreadsheet.contains(problem.getUrl())){
