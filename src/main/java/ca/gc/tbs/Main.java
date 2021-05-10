@@ -238,6 +238,21 @@ public class Main implements CommandLineRunner {
 			}
 		}
 	}
+	
+	// Temp solution to combat users entering hyperlinks with href HTML tags
+	// This can be improved in the future - temp fix.
+	public boolean containsHyperLink(String comment) {
+		try {
+			if(comment.toLowerCase().contains("a href")) {
+				System.out.println("Detected hyperlink: " + comment);
+				return true;
+			}
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage() + " could not delete comment.");
+		}
+		return false;
+	}
 
 	// Function resets problems that meet if criteria by setting variables to false forcing them to get processed again (not being used)
 	public void resetEverything() {
@@ -468,6 +483,7 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
+				
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
 				boolean emptyComment = problem.getProblemDetails().trim().equals("");
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
@@ -479,9 +495,9 @@ public class Main implements CommandLineRunner {
 				// if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
 				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
-				//	GoogleSheetsAPI.addEntry(problem.getUrl());
-				//	tier2Spreadsheet.add(problem.getUrl());	
-				// 	problem.setAirTableSync("true");
+					//GoogleSheetsAPI.addEntry(problem.getUrl());
+					//tier2Spreadsheet.add(problem.getUrl());	
+				 	//problem.setAirTableSync("true");
 				} 
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
 				else if(tier2Spreadsheet.contains(problem.getUrl())){
@@ -604,6 +620,9 @@ public class Main implements CommandLineRunner {
 				}
 				i++;
 				this.problemRepository.save(problem);
+				if(containsHyperLink(problem.getProblemDetails())) {
+					this.problemRepository.delete(problem);
+				}
 			} catch (Exception e) {
 				
 				System.out.println(
