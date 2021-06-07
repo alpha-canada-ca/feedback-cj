@@ -483,7 +483,7 @@ public class Main implements CommandLineRunner {
 		int maxToSync = 100;
 		for (Problem problem : pList) {
 			try {
-				
+				 
 				boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
 				boolean emptyComment = problem.getProblemDetails().trim().equals("");
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
