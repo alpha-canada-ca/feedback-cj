@@ -71,7 +71,7 @@ public class Main implements CommandLineRunner {
 	
 	@Value("${airtable.pageTitleLookup}")
 	private String airtablePageTitleLookup;
-
+ 
 	@Value("${airtable.mlTags}")
 	private String airtableMLTags;
 	
