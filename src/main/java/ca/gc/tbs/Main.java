@@ -160,7 +160,6 @@ public class Main implements CommandLineRunner {
 	public Main() throws Exception {
   
 	}
-	private ContentService contentService2 = new ContentService();
 	// Main Loop, Runs all functions needed.
 	@Override
 	public void run(String... args) throws Exception {
