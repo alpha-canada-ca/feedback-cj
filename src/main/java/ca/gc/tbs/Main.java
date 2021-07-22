@@ -171,6 +171,8 @@ public class Main implements CommandLineRunner {
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
 		this.travelBase = this.AirTableKey.base(this.travelAirtableBase);
 		
+		this.removeJunkDataTTS();
+		
 		this.importTier1();
 		this.importTier2();
 		
@@ -189,6 +191,7 @@ public class Main implements CommandLineRunner {
 		this.getURLLinkIds(CRA_Base);
 		this.getURLLinkIds(travelBase);
 		
+	
 		this.removePersonalInfoExitSurvey();
 		this.removePersonalInfo();
 		this.autoTag();
@@ -235,6 +238,55 @@ public class Main implements CommandLineRunner {
 				this.problemRepository.save(problem);
 			} catch (Exception e) {
 				System.out.println(e.getMessage() + " could not set existing record as processed.");
+			}
+		}
+	}
+	/*
+	 * This function removes any blank values so that the filter for write in comments
+	 * on the feedback data download tool is able to filter for entries with comments.
+	 * TODO:
+	 * Look for ways to make this function run faster
+	 * Mark entries as processed.
+	 */
+	public void removeJunkDataTTS() {
+		List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
+		int count = 0;
+		System.out.println("Amount of non processed entries (TTS) : " + tList.size());
+		for (TopTaskSurvey task : tList) {
+			try {
+				if(task.getTaskOther() == null) {
+					task.setTaskOther("");
+					this.topTaskRepository.save(task);
+				}
+				if(task.getTaskImproveComment().equals(null)) {
+					task.setTaskImproveComment("");
+					this.topTaskRepository.save(task);
+				}
+				if(task.getTaskWhyNotComment().equals(null)) {
+					task.setTaskWhyNotComment("");
+					this.topTaskRepository.save(task);
+				}
+				if((task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0)) {
+					task.setTaskOther("");
+					this.topTaskRepository.save(task);
+				}
+				if(task.getTaskImproveComment().length() != 0 && (task.getTaskImproveComment().trim().equals("/") 
+						|| task.getTaskImproveComment().trim().equals(""))) {
+					task.setTaskImproveComment("");
+					this.topTaskRepository.save(task);
+				}
+				if(task.getTaskWhyNotComment().length() != 0 && (task.getTaskWhyNotComment().trim().equals("/") 
+						|| task.getTaskWhyNotComment().trim().equals(""))) {
+					task.setTaskWhyNotComment("");
+					this.topTaskRepository.save(task);
+				}
+				task.setProcessed("true");
+				this.topTaskRepository.save(task);
+				count++;
+				System.out.println("Index: " + count + " , removeJunkDataTTS() ONLY FOR non processed entries.");
+				
+			} catch (Exception e) {
+				System.out.println(e.getMessage() + " could not remove junk data for: " + task);
 			}
 		}
 	}
@@ -495,9 +547,9 @@ public class Main implements CommandLineRunner {
 				// if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
 				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
-					//GoogleSheetsAPI.addEntry(problem.getUrl());
-					//tier2Spreadsheet.add(problem.getUrl());	
-				 	//problem.setAirTableSync("true");
+					GoogleSheetsAPI.addEntry(problem.getUrl());
+					tier2Spreadsheet.add(problem.getUrl());	
+				 	problem.setAirTableSync("true");
 				} 
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
 				else if(tier2Spreadsheet.contains(problem.getUrl())){
@@ -530,7 +582,7 @@ public class Main implements CommandLineRunner {
 						setAirProblemAttributes(airProblem, problem);
 						problemTable.create(airProblem);
 						problem.setAirTableSync("true");
-						System.out.println("Processed record: "+ i + " For Main, Date: "+ airProblem.getDate());
+						System.out.println("Processed record : "+ i + " For Main, Date: "+ airProblem.getDate());
 					} 
 					// Check if conditions met to go to health AirTable and populate.
 					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
@@ -555,7 +607,7 @@ public class Main implements CommandLineRunner {
 						setAirProblemAttributes(airProblem, problem);
 						healthTable.create(airProblem);
 						problem.setAirTableSync("true");
-						System.out.println("Processed record: "+ i + " For Health, Date: "+ airProblem.getDate());
+						System.out.println("Processed record : "+ i + " For Health, Date: "+ airProblem.getDate());
 					}
 					// Check if conditions met to go to CRA AirTable and populate.
 					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("cra")) {
@@ -583,7 +635,7 @@ public class Main implements CommandLineRunner {
 						setAirProblemAttributes(airProblem, problem);
 						craTable.create(airProblem);
 						problem.setAirTableSync("true");
-						System.out.println("Processed record: "+ i + " For CRA, Date: "+ airProblem.getDate());
+						System.out.println("Processed record : "+ i + " For CRA, Date: "+ airProblem.getDate());
 					}
 					
 					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("travel")) {
@@ -626,7 +678,7 @@ public class Main implements CommandLineRunner {
 			} catch (Exception e) {
 				
 				System.out.println(
-						e.getMessage() + " Could not sync record: " + problem.getId() + " URL:" + problem.getUrl());
+						e.getMessage() + " Could not sync record : " + problem.getId() + " URL:" + problem.getUrl());
 
 			}
 		}
