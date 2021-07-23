@@ -258,6 +258,10 @@ public class Main implements CommandLineRunner {
 					task.setTaskOther("");
 					this.topTaskRepository.save(task);
 				}
+				if(task.getThemeOther().equals(null)) {
+					task.setThemeOther("");
+					this.topTaskRepository.save(task);
+				}
 				if(task.getTaskImproveComment().equals(null)) {
 					task.setTaskImproveComment("");
 					this.topTaskRepository.save(task);
@@ -268,6 +272,10 @@ public class Main implements CommandLineRunner {
 				}
 				if((task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0)) {
 					task.setTaskOther("");
+					this.topTaskRepository.save(task);
+				}
+				if((task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0)) {
+					task.setThemeOther("");
 					this.topTaskRepository.save(task);
 				}
 				if(task.getTaskImproveComment().length() != 0 && (task.getTaskImproveComment().trim().equals("/") 
