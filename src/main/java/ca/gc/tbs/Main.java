@@ -552,6 +552,10 @@ public class Main implements CommandLineRunner {
 					System.out.println("Empty Comment: " + emptyComment + ", deleting entry");
 					problemRepository.delete(problem);
 				}
+				if(containsHyperLink(problem.getProblemDetails())) {
+					this.problemRepository.delete(problem);
+					continue;
+				}
 				// if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
 				if(tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
@@ -680,9 +684,6 @@ public class Main implements CommandLineRunner {
 				}
 				i++;
 				this.problemRepository.save(problem);
-				if(containsHyperLink(problem.getProblemDetails())) {
-					this.problemRepository.delete(problem);
-				}
 			} catch (Exception e) {
 				
 				System.out.println(
