@@ -258,15 +258,15 @@ public class Main implements CommandLineRunner {
 					task.setTaskOther("");
 					this.topTaskRepository.save(task);
 				}
-				if(task.getThemeOther().equals(null)) {
+				if(task.getThemeOther() == null) {
 					task.setThemeOther("");
 					this.topTaskRepository.save(task);
 				}
-				if(task.getTaskImproveComment().equals(null)) {
+				if(task.getTaskImproveComment() == null) {
 					task.setTaskImproveComment("");
 					this.topTaskRepository.save(task);
 				}
-				if(task.getTaskWhyNotComment().equals(null)) {
+				if(task.getTaskWhyNotComment() == null) {
 					task.setTaskWhyNotComment("");
 					this.topTaskRepository.save(task);
 				}
