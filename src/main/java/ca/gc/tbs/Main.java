@@ -532,7 +532,7 @@ public class Main implements CommandLineRunner {
 		System.out.println("Connected to MongoDB");
 		System.out.println("Found " + pList.size() + " records that need to be added.");
 		int i = 1;
-		int maxToSync = 1050;
+		int maxToSync = 150;
 		for (Problem problem : pList) {
 			try {
 				 
