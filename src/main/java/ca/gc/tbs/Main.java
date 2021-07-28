@@ -256,37 +256,29 @@ public class Main implements CommandLineRunner {
 			try {
 				if(task.getTaskOther() == null) {
 					task.setTaskOther("");
-					this.topTaskRepository.save(task);
 				}
 				if(task.getThemeOther() == null) {
 					task.setThemeOther("");
-					this.topTaskRepository.save(task);
 				}
 				if(task.getTaskImproveComment() == null) {
 					task.setTaskImproveComment("");
-					this.topTaskRepository.save(task);
 				}
 				if(task.getTaskWhyNotComment() == null) {
 					task.setTaskWhyNotComment("");
-					this.topTaskRepository.save(task);
 				}
 				if((task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0)) {
 					task.setTaskOther("");
-					this.topTaskRepository.save(task);
 				}
 				if((task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0)) {
 					task.setThemeOther("");
-					this.topTaskRepository.save(task);
 				}
 				if(task.getTaskImproveComment().length() != 0 && (task.getTaskImproveComment().trim().equals("/") 
 						|| task.getTaskImproveComment().trim().equals(""))) {
 					task.setTaskImproveComment("");
-					this.topTaskRepository.save(task);
 				}
 				if(task.getTaskWhyNotComment().length() != 0 && (task.getTaskWhyNotComment().trim().equals("/") 
 						|| task.getTaskWhyNotComment().trim().equals(""))) {
 					task.setTaskWhyNotComment("");
-					this.topTaskRepository.save(task);
 				}
 				task.setProcessed("true");
 				this.topTaskRepository.save(task);
@@ -540,7 +532,7 @@ public class Main implements CommandLineRunner {
 		System.out.println("Connected to MongoDB");
 		System.out.println("Found " + pList.size() + " records that need to be added.");
 		int i = 1;
-		int maxToSync = 150;
+		int maxToSync = 1050;
 		for (Problem problem : pList) {
 			try {
 				 
