@@ -258,37 +258,28 @@ public class Main implements CommandLineRunner {
 					this.topTaskRepository.delete(task);
 					continue;
 				}
-				if(task.getTaskOther() == null) {
+				if(task.getTaskOther() != null && task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0) {
 					task.setTaskOther("");
+					task.setProcessed("true");
+					this.topTaskRepository.save(task);
 				}
-				if(task.getThemeOther() == null) {
+				if(task.getThemeOther() != null && task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0) {
 					task.setThemeOther("");
+					task.setProcessed("true");
+					this.topTaskRepository.save(task);
 				}
-				if(task.getTaskImproveComment() == null) {
-					task.setTaskImproveComment("");
-				}
-				if(task.getTaskWhyNotComment() == null) {
-					task.setTaskWhyNotComment("");
-				}
-				if((task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0)) {
-					task.setTaskOther("");
-				}
-				if((task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0)) {
-					task.setThemeOther("");
-				}
-				if(task.getTaskImproveComment().length() != 0 && (task.getTaskImproveComment().trim().equals("/") 
+				if(task.getTaskImproveComment() != null && task.getTaskImproveComment().length() != 0 && (task.getTaskImproveComment().trim().equals("/") 
 						|| task.getTaskImproveComment().trim().equals(""))) {
 					task.setTaskImproveComment("");
+					task.setProcessed("true");
+					this.topTaskRepository.save(task);
 				}
-				if(task.getTaskWhyNotComment().length() != 0 && (task.getTaskWhyNotComment().trim().equals("/") 
+				if(task.getTaskWhyNotComment() != null && task.getTaskWhyNotComment().length() != 0 && (task.getTaskWhyNotComment().trim().equals("/") 
 						|| task.getTaskWhyNotComment().trim().equals(""))) {
 					task.setTaskWhyNotComment("");
-				}
-				task.setProcessed("true");
-				this.topTaskRepository.save(task);
-				count++;
-				System.out.println("Index: " + count + " , removeJunkDataTTS() ONLY FOR non processed entries.");
-				
+					task.setProcessed("true");
+					this.topTaskRepository.save(task);
+				}				
 			} catch (Exception e) {
 				System.out.println(e.getMessage() + " could not remove junk data for: " + task);
 			}
