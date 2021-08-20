@@ -508,7 +508,7 @@ public class Main implements CommandLineRunner {
 			}
 		}
 		System.out.println("Private info removed top task...");
-	}
+	} 
 
 
 	// This function populates problem entries to AirTable base.
