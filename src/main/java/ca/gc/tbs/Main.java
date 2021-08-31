@@ -231,13 +231,11 @@ public class Main implements CommandLineRunner {
 	public void flagAlreadyAddedData() {
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
-			try {
+			if(problem != null) {
 				problem.setAutoTagProcessed("true");
 				problem.setPersonalInfoProcessed("true");
 				problem.setProcessed("true");
 				this.problemRepository.save(problem);
-			} catch (Exception e) {
-				System.out.println(e.getMessage() + " could not set existing record as processed.");
 			}
 		}
 	}
@@ -253,8 +251,8 @@ public class Main implements CommandLineRunner {
 		int count = 0;
 		System.out.println("Amount of non processed entries (TTS) : " + tList.size());
 		for (TopTaskSurvey task : tList) {
-			try {
-				if(containsHyperLink(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
+				if(task == null || containsHyperLink(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
+					System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink");
 					this.topTaskRepository.delete(task);
 					continue;
 				}
@@ -280,9 +278,6 @@ public class Main implements CommandLineRunner {
 					task.setProcessed("true");
 					this.topTaskRepository.save(task);
 				}				
-			} catch (Exception e) {
-				System.out.println(e.getMessage() + " could not remove junk data for: " + task);
-			}
 		}
 	}
 	
