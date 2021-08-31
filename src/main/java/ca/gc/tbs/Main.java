@@ -284,18 +284,11 @@ public class Main implements CommandLineRunner {
 	// Temp solution to combat users entering hyperlinks with href HTML tags
 	// This can be improved in the future to catch more cases - temp fix.
 	public boolean containsHyperLink(String... comments) {
-		try {
-			for(String comment: comments) {
-				if(comment != null) {
-					if(comment.toLowerCase().contains("a href")) {
-						System.out.println("Detected hyperlink: " + comment);
-						return true;
-					}
-				}
+		for(String comment: comments) {
+			if(comment != null && comment.toLowerCase().contains("a href")) {
+				System.out.println("Detected hyperlink: " + comment);
+				return true;
 			}
-			
-		} catch (Exception e) {
-			System.out.println(e.getMessage() + " could not delete comment.");
 		}
 		return false;
 	}
