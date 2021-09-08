@@ -697,10 +697,14 @@ public class Main implements CommandLineRunner {
 		System.out.println("Connected to Airtable Stats");
 		List<AirTableStat> stats 	= statsTable.select();
 		HashMap<String, String> m 	= selectMapPageTitleIds(base);
-		stats.forEach(entry -> {try { m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
-	        } catch(Exception e) {
-	        	System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " in base: " + base.name());
-	        }
+		stats.forEach(entry -> {
+			if(entry.getPageTitle() != null) {
+				try {
+					m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
+		        } catch(Exception e) {
+		        	System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " in base: " + base.name());
+		        }
+			}
 	    });
 	}
 	
