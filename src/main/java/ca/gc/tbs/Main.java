@@ -731,10 +731,14 @@ public class Main implements CommandLineRunner {
 		System.out.println("Connected to Airtable tags table");
 		List<AirTableMLTag> tags = tagsTable.select();
 		HashMap<String, String> m 	= selectMapMLTagIds(base);
-		tags.forEach(entry -> {try { m.put(entry.getTag().trim().toUpperCase(), entry.getId());
-	        } catch(Exception e) {
-	        	System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " in base: " + base.name());
-	        }
+		tags.forEach(entry -> {
+			if(entry.getTag() != null) {
+				try {
+					m.put(entry.getTag().trim().toUpperCase(), entry.getId());
+		        } catch(Exception e) {
+		        	System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " in base: " + base.name());
+		        }
+			}
 	    });
 	}
 
