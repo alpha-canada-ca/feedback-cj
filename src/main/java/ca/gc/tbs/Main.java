@@ -239,16 +239,15 @@ public class Main implements CommandLineRunner {
 			}
 		}
 	}
-	/*
-	 * This function removes any blank values so that the filter for write in comments
-	 * on the feedback data download tool is able to filter for entries with comments.
-	 * TODO:
-	 * Look for ways to make this function run faster
-	 * Mark entries as processed.
-	 */
+/*
+ * This function removes any blank values so that the filter for write in comments
+ * on the feedback data download tool is able to filter for entries with comments.
+ * TODO:
+ * Look for ways to make this function run faster
+ * Mark entries as processed.
+ */
 	public void removeJunkDataTTS() {
 		List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
-		int count = 0;
 		System.out.println("Amount of non processed entries (TTS) : " + tList.size());
 		for (TopTaskSurvey task : tList) {
 				if(task == null || containsHyperLink(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
@@ -543,6 +542,7 @@ public class Main implements CommandLineRunner {
 //					 problem.setAirTableSync("true");
 				}
 				//if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
+				//TIER 2 entries end here.
 				else if(tier2Spreadsheet.contains(problem.getUrl())){
 					System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
 					problem.setAirTableSync("true");
@@ -711,10 +711,15 @@ public class Main implements CommandLineRunner {
 		System.out.println("Connected to Airtable Url Link Table");
 		List<AirTableURLLink> urlLinks = urlLinkTable.select();
 		HashMap<String, String> m 	= selectMapUrlLinkIds(base);
-		urlLinks.forEach(entry -> {try { m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
-	        } catch(Exception e) {
-	        	System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " in base: " + base.name());
-	        }
+		urlLinks.forEach(entry -> {
+			if(entry.getURLlink() != null) {
+				try { 
+					m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
+					}
+				catch(Exception e) {
+		        	System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " in base: " + base.name());
+					}
+			}
 	    });
 	}
 
