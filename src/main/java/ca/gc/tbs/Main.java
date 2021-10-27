@@ -63,9 +63,6 @@ public class Main implements CommandLineRunner {
 	@Value("${airtable.key}")
 	private String airtableKey;
 
-	@Value("${airtable.base}")
-	private String problemAirtableBase;
-
 	@Value("${airtable.tab}")
 	private String problemAirtableTab;
 	
@@ -78,6 +75,10 @@ public class Main implements CommandLineRunner {
 	@Value("${airtable.URL_link}")
 	private String airtableURLLink;
 	
+	// Main AirTable
+	@Value("${airtable.base}")
+	private String problemAirtableBase;
+	
 	// Health AirTable
 	@Value("${health.airtable.base}")
 	private String healthAirtableBase;
@@ -89,6 +90,10 @@ public class Main implements CommandLineRunner {
 	// Travel AirTable
 	@Value("${travel.airtable.base}")
 	private String travelAirtableBase;
+	
+	// IRCC AirTable
+	@Value("${ircc.airtable.base}")
+	private String irccAirtableBase;
 
 	private Airtable AirTableKey;
 	
@@ -96,6 +101,7 @@ public class Main implements CommandLineRunner {
 	private Base healthBase;
 	private Base CRA_Base;
 	private Base travelBase;
+	private Base IRCC_Base;
 
 	// Tier 2 entries do not populate to AirTable. 
 	private Set<String> tier2Spreadsheet = new HashSet<String>();
@@ -106,16 +112,19 @@ public class Main implements CommandLineRunner {
 	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_PageTitleIds = new HashMap<String, String>();
 	private HashMap<String, String> travelPageTitleIds = new HashMap<String, String>();
+	private HashMap<String, String> IRCC_PageTitleIds = new HashMap<String, String>();
 	
 	private HashMap<String, String> problemUrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> healthUrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_UrlLinkIds = new HashMap<String, String>();
 	private HashMap<String, String> travelUrlLinkIds = new HashMap<String, String>();
+	private HashMap<String, String> IRCC_UrlLinkIds = new HashMap<String, String>();
 	
 	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> CRA_MlTagIds = new HashMap<String, String>();
 	private HashMap<String, String> travelMlTagIds = new HashMap<String, String>();
+	private HashMap<String, String> IRCC_MlTagIds = new HashMap<String, String>();
 	
 	public HashMap<String, String> selectMapPageTitleIds(Base base) {
 		  if(base.equals(mainBase))
@@ -126,6 +135,8 @@ public class Main implements CommandLineRunner {
 		    return this.CRA_PageTitleIds;
 		  if(base.equals(travelBase))
 			    return this.travelPageTitleIds;
+		  if(base.equals(IRCC_Base))
+			    return this.IRCC_PageTitleIds;
 		  return null;
 	} 
 	
@@ -138,6 +149,8 @@ public class Main implements CommandLineRunner {
 		    return this.CRA_UrlLinkIds;
 		  if(base.equals(travelBase))
 			  return this.travelUrlLinkIds;
+		  if(base.equals(IRCC_Base))
+			  return this.IRCC_UrlLinkIds;
 		  return null;
 	} 
 	public HashMap<String, String> selectMapMLTagIds(Base base) {
@@ -149,6 +162,8 @@ public class Main implements CommandLineRunner {
 		    return this.CRA_MlTagIds;
 		  if(base.equals(travelBase))
 			  return this.travelMlTagIds;
+		  if(base.equals(IRCC_Base))
+			  return this.IRCC_MlTagIds;
 		  return null;
 	} 
 	
@@ -170,6 +185,7 @@ public class Main implements CommandLineRunner {
 		this.healthBase = this.AirTableKey.base(this.healthAirtableBase);
 		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
 		this.travelBase = this.AirTableKey.base(this.travelAirtableBase);
+		this.IRCC_Base = this.AirTableKey.base(this.irccAirtableBase);
 		
 		this.removeJunkDataTTS();
 		
@@ -180,16 +196,19 @@ public class Main implements CommandLineRunner {
 		this.getPageTitleIds(healthBase);
 		this.getPageTitleIds(CRA_Base);
 		this.getPageTitleIds(travelBase);
+		this.getPageTitleIds(IRCC_Base);
 		
 		this.getMLTagIds(mainBase);
 		this.getMLTagIds(healthBase);
 		this.getMLTagIds(CRA_Base);
 		this.getMLTagIds(travelBase);
+		this.getMLTagIds(IRCC_Base);
 		
 		this.getURLLinkIds(mainBase);
 		this.getURLLinkIds(healthBase);
 		this.getURLLinkIds(CRA_Base);
 		this.getURLLinkIds(travelBase);
+		this.getURLLinkIds(IRCC_Base);
 		
 	
 		this.removePersonalInfoExitSurvey();
@@ -510,6 +529,8 @@ public class Main implements CommandLineRunner {
 		Table<AirTableProblemEnhanced> craTable 	= CRA_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> travelTable 	= travelBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
+		@SuppressWarnings("unchecked")
+		Table<AirTableProblemEnhanced> irccTable 	= IRCC_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		
 		System.out.println("Connected to Airtable");
 		// Find problems that have not been ran through this function
@@ -654,6 +675,33 @@ public class Main implements CommandLineRunner {
 						setAirProblemAttributes(airProblem, problem);
 						travelTable.create(airProblem);
 						System.out.println("Processed record : "+ i + " For Travel, Date: "+ airProblem.getDate());
+						problem.setAirTableSync("true");
+					}
+					if(problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("ircc")) {
+						AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+						airProblem.setUTM(UTM_value);
+						
+						if (!this.IRCC_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+							this.createUrlLinkEntry(problem.getUrl(), IRCC_Base, airtableURLLink);
+						}
+						
+						airProblem.getURLLinkIds().add(this.IRCC_UrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+						
+						if (!this.IRCC_PageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+							this.createPageTitleEntry(problem.getTitle(), IRCC_Base, airtablePageTitleLookup);
+						}
+						airProblem.getPageTitleIds().add(this.IRCC_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+					
+						for (String tag : problem.getTags()) {
+							if (this.IRCC_MlTagIds.containsKey(tag.trim().toUpperCase())) {
+								airProblem.getTags().add(this.IRCC_MlTagIds.get(tag.trim().toUpperCase()));
+							} else {
+								System.out.println("Missing tag id for:" + tag);
+							}
+						}  
+						setAirProblemAttributes(airProblem, problem);
+						irccTable.create(airProblem);
+						System.out.println("Processed record : "+ i + " For IRCC, Date: "+ airProblem.getDate());
 						problem.setAirTableSync("true");
 					}
 				}
