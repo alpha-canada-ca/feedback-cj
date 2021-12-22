@@ -269,7 +269,7 @@ public class Main implements CommandLineRunner {
 		List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
 		System.out.println("Amount of non processed entries (TTS) : " + tList.size());
 		for (TopTaskSurvey task : tList) {
-				if(task == null || containsHyperLink(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
+				if(task == null || containsHTML(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
 					System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink");
 					this.topTaskRepository.delete(task);
 					continue;
@@ -299,12 +299,17 @@ public class Main implements CommandLineRunner {
 		}
 	}
 	
+	public static String html2text(String html) {
+	    return Jsoup.parse(html).text();
+	}
 	// Temp solution to combat users entering hyperlinks with href HTML tags
 	// This can be improved in the future to catch more cases - temp fix.
-	public boolean containsHyperLink(String... comments) {
+	public boolean containsHTML(String... comments) {
 		for(String comment: comments) {
-			if(comment != null && comment.toLowerCase().contains("a href")) {
-				System.out.println("Detected hyperlink: " + comment);
+			
+			//for some reason, html2text subtracts 1 from the length.
+			if(comment != null && (comment.trim().length() != html2text(comment).length())) {
+				System.out.println("Detected HTML, deleting entry belonging to comment: " + comment);
 				return true;
 			}
 		}
@@ -551,7 +556,7 @@ public class Main implements CommandLineRunner {
 					System.out.println("Empty Comment: " + emptyComment + ", deleting entry");
 					problemRepository.delete(problem);
 				}
-				if(containsHyperLink(problem.getProblemDetails())) {
+				if(containsHTML(problem.getProblemDetails())) {
 					this.problemRepository.delete(problem);
 					continue;
 				}
