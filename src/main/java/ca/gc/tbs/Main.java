@@ -219,7 +219,10 @@ public class Main implements CommandLineRunner {
 	}
 
 	// Use this function to test removing personal information from a comment after any changes to cleaning code. (test case)
-	public void testRemovePII() {
+	public Boolean testRemovePII() {
+		return containsHTML("A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
+	}
+	public void testRemovePII2() {
 		String content = this.contentService.cleanContent("We own our business\n" + "Property\n" + "Need\n"
 				+ "Buss  relate to travel\n" + "And shut  down since March\n"
 				+ "But have to pay   city  403  735 6090 taxes   condo  fee and  utility   \n"
@@ -306,9 +309,12 @@ public class Main implements CommandLineRunner {
 	// This can be improved in the future to catch more cases - temp fix.
 	public boolean containsHTML(String... comments) {
 		for(String comment: comments) {
-			
+//			System.out.println(comment.trim().replaceAll(" +", " ").length());
+//			System.out.println(html2text(comment).length());
+//			System.out.println(html2text(comment));
+//			System.out.println(comment.trim().replaceAll(" +", " "));
 			//for some reason, html2text subtracts 1 from the length.
-			if(comment != null && (comment.trim().length() != html2text(comment).length())) {
+			if(comment != null && (comment.trim().replaceAll(" +", " ").length() != html2text(comment).length())) {
 				System.out.println("Detected HTML, deleting entry belonging to comment: " + comment);
 				return true;
 			}
@@ -379,6 +385,7 @@ public class Main implements CommandLineRunner {
 	public void autoTag() {
 		List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
 		pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
+		System.out.println(pList.size());
 		for (Problem problem : pList) {
 			String model = "";
 			try {
