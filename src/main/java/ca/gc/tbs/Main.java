@@ -232,7 +232,7 @@ public class Main implements CommandLineRunner {
 				+ "Call  me   403  735 6090\n" + "Than");
 		System.out.println("Content cleaned." + content);
 	}
-
+//
 	// This function sets problem entries to setAirTableSync="false" after date given to function
 	public void reSyncDataAfterDate(String date) throws ParseException {
 		Date afterDate = DATE_FORMAT.parse(date);
