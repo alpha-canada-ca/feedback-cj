@@ -16,7 +16,7 @@ public class AirTableProblemEnhanced {
 	@SerializedName("URL")
 	private String URL;
 	
-	@SerializedName("Time recieved")
+	@SerializedName("Time received")
 	private String timeStamp;
 	
 	@SerializedName("UTM URL")

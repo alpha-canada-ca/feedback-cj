@@ -9,7 +9,7 @@ public class AirTableProblem {
 	
 	@SerializedName("Date")
 	private String date;
-	@SerializedName("Time recieved")
+	@SerializedName("Time received")
 	private String timeStamp;
 	@SerializedName("URL")
 	private String URL;
