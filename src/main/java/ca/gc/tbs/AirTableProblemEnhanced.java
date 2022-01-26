@@ -16,6 +16,9 @@ public class AirTableProblemEnhanced {
 	@SerializedName("URL")
 	private String URL;
 	
+	@SerializedName("Time recieved")
+	private String timeStamp;
+	
 	@SerializedName("UTM URL")
 	private String UTM;
 	@SerializedName("URL_link")
@@ -75,6 +78,12 @@ public class AirTableProblemEnhanced {
 
 	public void setDate(String date) {
 		this.date = date;
+	}
+	public String getTimeStamp() {
+		return timeStamp;
+	}
+	public void setTimeStamp(String timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 
 	public String getLang() {

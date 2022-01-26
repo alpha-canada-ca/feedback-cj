@@ -9,6 +9,8 @@ public class AirTableProblem {
 	
 	@SerializedName("Date")
 	private String date;
+	@SerializedName("Time recieved")
+	private String timeStamp;
 	@SerializedName("URL")
 	private String URL;
 	@SerializedName("Name")
@@ -46,6 +48,12 @@ public class AirTableProblem {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	public String getTimeStamp() {
+		return timeStamp;
+	}
+	public void setTimeStamp(String timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 	public String getDate() {
 		return date;
