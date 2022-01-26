@@ -735,6 +735,7 @@ public class Main implements CommandLineRunner {
 	public void setAirProblemAttributes(AirTableProblemEnhanced airProblem, Problem problem ) {
 		airProblem.setUniqueID(problem.getId());
 		airProblem.setDate(problem.getProblemDate());
+		airProblem.setTimeStamp(problem.getTimeStamp());
 		airProblem.setURL(problem.getUrl());
 		airProblem.setLang(problem.getLanguage().toUpperCase());
 		airProblem.setWhatswrong(problem.getProblem());
