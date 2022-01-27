@@ -743,7 +743,7 @@ public class Main implements CommandLineRunner {
 		airProblem.setIgnore(null);
 		airProblem.setTagsConfirmed(null);
 		airProblem.setRefiningDetails("");
-		airProblem.setActionable(null);
+ 		airProblem.setActionable(null);
 		airProblem.setMainSection(problem.getSection());
 		airProblem.setStatus("New");
 		airProblem.setLookupTags(null);
@@ -756,7 +756,7 @@ public class Main implements CommandLineRunner {
 	private void getPageTitleIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
-		System.out.println("Connected to Airtable Stats");
+		System.out.println("Connected to Airtable Stats for base: " + base);
 		List<AirTableStat> stats 	= statsTable.select();
 		HashMap<String, String> m 	= selectMapPageTitleIds(base);
 		stats.forEach(entry -> {
@@ -774,7 +774,7 @@ public class Main implements CommandLineRunner {
 	private void getURLLinkIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
-		System.out.println("Connected to Airtable Url Link Table");
+		System.out.println("Connected to Airtable Url Link Table for base: " + base);
 		List<AirTableURLLink> urlLinks = urlLinkTable.select();
 		HashMap<String, String> m 	= selectMapUrlLinkIds(base);
 		urlLinks.forEach(entry -> {
@@ -794,7 +794,7 @@ public class Main implements CommandLineRunner {
 	private void getMLTagIds(Base base) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
-		System.out.println("Connected to Airtable tags table");
+		System.out.println("Connected to Airtable tags table for base: " + base);
 		List<AirTableMLTag> tags = tagsTable.select();
 		HashMap<String, String> m 	= selectMapMLTagIds(base);
 		tags.forEach(entry -> {
