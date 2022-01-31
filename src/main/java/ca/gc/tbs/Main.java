@@ -388,7 +388,7 @@ public class Main implements CommandLineRunner {
 				// If problem has comment, assign language & model. 
 				if (!problem.getProblemDetails().trim().equals("")) {
 					String lang = "en";
-					if (problem.getLanguage().toLowerCase().equals("fr")) {
+					if (problem.getLanguage().equalsIgnoreCase("fr")) {
 						lang = "fr";
 					}
 					String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
@@ -405,7 +405,7 @@ public class Main implements CommandLineRunner {
 								+ lang + "&text=" + text + "&section=" + model).maxBodySize(0).get();
 						String tags = doc.select("body").html();
 						System.out.println("Text:" + text + " : " + tags);
-						String splitTags[] = tags.split(",");
+						String[] splitTags = tags.split(",");
 						problem.getTags().addAll(Arrays.asList(splitTags));
 					}
 				}
@@ -456,7 +456,7 @@ public class Main implements CommandLineRunner {
 		int i = 0;
 		for (Problem problem : pList) {
 			i++;
-			if(problem.getSection().toLowerCase().equals("ptr")) {
+			if(problem.getSection().equalsIgnoreCase("ptr")) {
 				problem.setAirTableSync("false");
 				this.problemRepository.save(problem);
 				System.out.println("Reset PTR: " + i);
@@ -527,7 +527,7 @@ public class Main implements CommandLineRunner {
 
 	// This function populates problem entries to AirTable base.
 	
-	public void airTableSpreadsheetSync() throws Exception {
+	public void airTableSpreadsheetSync() {
 		// Connect to AirTable bases
 		@SuppressWarnings("unchecked")
 		Table<AirTableProblemEnhanced> problemTable = mainBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
@@ -556,7 +556,7 @@ public class Main implements CommandLineRunner {
 				String UTM_value = returnQueryAfterHTML(problem.getUrl());
 				problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
 				if(emptyComment) { 
-					System.out.println("Empty Comment: " + emptyComment + ", deleting entry");
+					System.out.println("Empty comment, deleting entry...");
 					problemRepository.delete(problem);
 				}
 				if(containsHTML(problem.getProblemDetails())) {
