@@ -245,7 +245,7 @@ public class Main implements CommandLineRunner {
 		}
 	}
 
-	// This function finds data that has already been ran by airTableSync and sets processed values to true (not in use)
+	// This function finds data that has already been run by airTableSync and sets processed values to true (not in use)
 	public void flagAlreadyAddedData() {
 		List<Problem> pList = this.problemRepository.findByAirTableSync("true");
 		for (Problem problem : pList) {
@@ -333,7 +333,7 @@ public class Main implements CommandLineRunner {
 	}
 	
 
-	// This function grabs all the models and associated URLs from the google spreadsheet.
+	// This function grabs all the models and associated URLs from the Google spreadsheet.
 	public void importTier1() throws Exception {
 		final Reader reader = new InputStreamReader(new URL(
 				"https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv")
@@ -343,7 +343,7 @@ public class Main implements CommandLineRunner {
 		try {
 			for (final CSVRecord record : parser) {
 				try {
-					//remove .toLowerCase() for models, they are case sensitive, look for a fix in python code.
+					//remove .toLowerCase() for models, they are case-sensitive, look for a fix in python code.
 					String[] modelBase = {record.get("MODEL"), record.get("BASE").toLowerCase()};
 					tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);			
 				} catch (Exception e) {
@@ -541,7 +541,7 @@ public class Main implements CommandLineRunner {
 		Table<AirTableProblemEnhanced> irccTable 	= IRCC_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
 		
 		System.out.println("Connected to Airtable");
-		// Find problems that have not been ran through this function
+		// Find problems that have not been run through this function
 		List<Problem> pList = this.problemRepository.findByAirTableSync(null);
 		pList.addAll(this.problemRepository.findByAirTableSync("false"));
 		System.out.println("Connected to MongoDB");
@@ -803,7 +803,7 @@ public class Main implements CommandLineRunner {
 	    });
 	}
 
-	//Creates records for new titles
+	//Creates record for new titles
 	private void createPageTitleEntry(String title, Base base, String pageTitle) throws Exception {
 		@SuppressWarnings("unchecked")
 		Table<AirTableStat> statsTable 				= base.table(pageTitle, AirTableStat.class);
@@ -813,7 +813,7 @@ public class Main implements CommandLineRunner {
 		basePageTitleMap.put(title.trim().toUpperCase(), stat.getId());
 	}
 	
-	 //Creates records for new URLs
+	 //Creates record for new URLs
 	 private void createUrlLinkEntry(String url, Base base, String pageTitle) throws Exception {
 		 @SuppressWarnings("unchecked")
 		Table<AirTableURLLink> urlLinkTable 		= base.table(pageTitle, AirTableURLLink.class);
