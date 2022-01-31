@@ -95,8 +95,6 @@ public class Main implements CommandLineRunner {
 	@Value("${ircc.airtable.base}")
 	private String irccAirtableBase;
 
-	private Airtable AirTableKey;
-	
 	private Base mainBase;
 	private Base healthBase;
 	private Base CRA_Base;
@@ -179,14 +177,14 @@ public class Main implements CommandLineRunner {
 	// Main Loop, Runs all functions needed.
 	@Override
 	public void run(String... args) throws Exception {
+
+		Airtable airTableKey = new Airtable().configure(this.airtableKey);
 		
-		this.AirTableKey = new Airtable().configure(this.airtableKey);
-		
-		this.mainBase = this.AirTableKey.base(this.problemAirtableBase);
-		this.healthBase = this.AirTableKey.base(this.healthAirtableBase);
-		this.CRA_Base = this.AirTableKey.base(this.CRA_AirtableBase);
-		this.travelBase = this.AirTableKey.base(this.travelAirtableBase);
-		this.IRCC_Base = this.AirTableKey.base(this.irccAirtableBase);
+		this.mainBase = airTableKey.base(this.problemAirtableBase);
+		this.healthBase = airTableKey.base(this.healthAirtableBase);
+		this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
+		this.travelBase = airTableKey.base(this.travelAirtableBase);
+		this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
 		
 		this.removeJunkDataTTS();
 		
