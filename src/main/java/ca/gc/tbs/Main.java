@@ -166,14 +166,11 @@ public class Main implements CommandLineRunner {
 		  return null;
 	} 
 	
-	public static void main(String args[]) throws Exception {
+	public static void main(String[] args) {
 		new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
 				.run(args);
 	}
 
-	public Main() throws Exception {
-  
-	}
 	// Main Loop, Runs all functions needed.
 	@Override
 	public void run(String... args) throws Exception {
