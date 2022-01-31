@@ -103,27 +103,27 @@ public class Main implements CommandLineRunner {
 	//
 
 	// Tier 2 entries do not populate to AirTable. 
-	private Set<String> tier2Spreadsheet = new HashSet<String>();
+	private final Set<String> tier2Spreadsheet = new HashSet<>();
 
-	private HashMap<String, String[]> tier1Spreadsheet = new HashMap<String, String[]>();
+	private final HashMap<String, String[]> tier1Spreadsheet = new HashMap<>();
 
-	private HashMap<String, String> problemPageTitleIds = new HashMap<String, String>();
-	private HashMap<String, String> healthPageTitleIds = new HashMap<String, String>();
-	private HashMap<String, String> CRA_PageTitleIds = new HashMap<String, String>();
-	private HashMap<String, String> travelPageTitleIds = new HashMap<String, String>();
-	private HashMap<String, String> IRCC_PageTitleIds = new HashMap<String, String>();
+	private final HashMap<String, String> problemPageTitleIds = new HashMap<>();
+	private final HashMap<String, String> healthPageTitleIds = new HashMap<>();
+	private final HashMap<String, String> CRA_PageTitleIds = new HashMap<>();
+	private final HashMap<String, String> travelPageTitleIds = new HashMap<>();
+	private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
 	
-	private HashMap<String, String> problemUrlLinkIds = new HashMap<String, String>();
-	private HashMap<String, String> healthUrlLinkIds = new HashMap<String, String>();
-	private HashMap<String, String> CRA_UrlLinkIds = new HashMap<String, String>();
-	private HashMap<String, String> travelUrlLinkIds = new HashMap<String, String>();
-	private HashMap<String, String> IRCC_UrlLinkIds = new HashMap<String, String>();
+	private final HashMap<String, String> problemUrlLinkIds = new HashMapg>();
+	private final HashMap<String, String> healthUrlLinkIds = new HashMap<>();
+	private final HashMap<String, String> CRA_UrlLinkIds = new HashMap<>();
+	private final HashMap<String, String> travelUrlLinkIds = new HashMap<>();
+	private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
 	
-	private HashMap<String, String> problemMlTagIds = new HashMap<String, String>();
-	private HashMap<String, String> healthMlTagIds = new HashMap<String, String>();
-	private HashMap<String, String> CRA_MlTagIds = new HashMap<String, String>();
-	private HashMap<String, String> travelMlTagIds = new HashMap<String, String>();
-	private HashMap<String, String> IRCC_MlTagIds = new HashMap<String, String>();
+	private final HashMap<String, String> problemMlTagIds = new HashMap<>();
+	private final HashMap<String, String> healthMlTagIds = new HashMap<>();
+	private final HashMap<String, String> CRA_MlTagIds = new HashMap<>();
+	private final HashMap<String, String> travelMlTagIds = new HashMap<>();
+	private final HashMap<String, String> IRCC_MlTagIds = new HashMap<>();
 	
 	public HashMap<String, String> selectMapPageTitleIds(Base base) {
 		  if(base.equals(mainBase))
