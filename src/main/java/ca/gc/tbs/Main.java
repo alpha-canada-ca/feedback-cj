@@ -113,7 +113,7 @@ public class Main implements CommandLineRunner {
 	private final HashMap<String, String> travelPageTitleIds = new HashMap<>();
 	private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
 	
-	private final HashMap<String, String> problemUrlLinkIds = new HashMap>();
+	private final HashMap<String, String> problemUrlLinkIds = new HashMap<>();
 	private final HashMap<String, String> healthUrlLinkIds = new HashMap<>();
 	private final HashMap<String, String> CRA_UrlLinkIds = new HashMap<>();
 	private final HashMap<String, String> travelUrlLinkIds = new HashMap<>();
