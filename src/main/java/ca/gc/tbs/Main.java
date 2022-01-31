@@ -338,7 +338,7 @@ public class Main implements CommandLineRunner {
 		final Reader reader = new InputStreamReader(new URL(
 				"https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv")
 						.openConnection().getInputStream(),
-				"UTF-8");
+				StandardCharsets.UTF_8);
 		final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
 		try {
 			for (final CSVRecord record : parser) {
@@ -360,7 +360,7 @@ public class Main implements CommandLineRunner {
 		final Reader reader = new InputStreamReader(new URL(
 				"https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv")
 						.openConnection().getInputStream(),
-				"UTF-8");
+				StandardCharsets.UTF_8);
 		final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
 		try {
 			for (final CSVRecord record : parser) {
