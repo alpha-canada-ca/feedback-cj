@@ -574,7 +574,7 @@ public class Main implements CommandLineRunner {
 					System.out.println("Empty comment, deleting entry...");
 					problemRepository.delete(problem);
 				}
-				if (containsHTML(problem.getProblemDetails())) {
+				if (containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/")) {
 					this.problemRepository.delete(problem);
 					continue;
 				}
