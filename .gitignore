@@ -371,3 +371,5 @@ Feedback Tool.iml
 .idea/jarRepositories.xml
 .idea/encodings.xml
 .idea/compiler.xml
+.idea/dbnavigator.xml
+.idea/inspectionProfiles/Project_Default.xml
