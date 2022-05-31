@@ -272,6 +272,7 @@ public class Main implements CommandLineRunner {
 		System.out.println("Amount of non processed entries (TTS) : " + tList.size());
 		for (TopTaskSurvey task : tList) {
 			if (task == null || containsHTML(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
+				assert task != null;
 				System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink");
 				this.topTaskRepository.delete(task);
 				continue;
@@ -583,7 +584,7 @@ public class Main implements CommandLineRunner {
 				if (tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
 					System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
 //					GoogleSheetsAPI.addEntry(problem.getUrl());
-//					tier2Spreadsheet.add(problem.getUrl()); -oauth2
+//					tier2Spreadsheet.add(problem.getUrl());
 //					problem.setAirTableSync("true");
 				}
 				// if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
