@@ -1,7 +1,7 @@
 ## feedback-cj
 
 **Page feedback cronjob:**
-The purpose of this tool is to clean personal info of both the exit survey entries and page feedback entries, apply tags to page feedback entries, and sync the page feedback entries with airtable.
+The purpose of this tool is to clean personal info of both the exit survey entries and page feedback entries, apply tags to page feedback entries, and sync the page feedback entries with airtable and the feedback-viewer.
 
 **Anytime changes are made to the domain you will need to:**
   1. Comment out the plugins in the pom.xml file for the Feedback Viewer repository
