@@ -4,6 +4,8 @@ metadata:
   name: feedback-cj
 spec:
   schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
   jobTemplate:
     spec:
       template:
