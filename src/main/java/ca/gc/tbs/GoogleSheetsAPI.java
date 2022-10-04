@@ -1,134 +1,84 @@
 package ca.gc.tbs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
-import java.util.List;
-
-
-import java.util.Arrays;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class GoogleSheetsAPI {
+	private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
+	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+	private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-	private static Sheets sheetsService;
-	private static String APPLICATION_NAME = "example";
-	private static String SPREADSHEET_ID = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
-	
-	private static Credential authorize() throws IOException, GeneralSecurityException {
-		
-		InputStream in = GoogleSheetsAPI.class.getResourceAsStream("/spreadsheetCredentials.json");
+	/**
+	 * Global instance of the scopes required by this quickstart.
+	 * If modifying these scopes, delete your previously saved tokens/ folder.
+	 */
+	private static final List<String> SCOPES =
+			Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+	private static final String CREDENTIALS_FILE_PATH = "/spreadsheetCredentials.json";
 
-		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
-				JacksonFactory.getDefaultInstance(), new InputStreamReader(in)
-		);
-		
-		List<String> scopes = Arrays.asList(SheetsScopes.SPREADSHEETS);
-		
+	/**
+	 * Creates an authorized Credential object.
+	 *
+	 * @param HTTP_TRANSPORT The network HTTP Transport.
+	 * @return An authorized Credential object.
+	 * @throws IOException If the credentials.json file cannot be found.
+	 */
+	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
+			throws IOException {
+		// Load client secrets.
+		InputStream in = GoogleSheetsAPI.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+		if (in == null) {
+			throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+		}
+		GoogleClientSecrets clientSecrets =
+				GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+
+		// Build flow and trigger user authorization request.
 		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-				GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),clientSecrets, scopes)
-				.setDataStoreFactory(new FileDataStoreFactory( new java.io.File("tokens")))
+				HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
 				.setAccessType("offline")
 				.build();
-		Credential credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver())
-				.authorize("user");
-		
-		return credential;
+		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 	}
-	
-	public static Sheets getSheetsService() throws IOException, GeneralSecurityException {
-		Credential credential = authorize();
-		return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-				JacksonFactory.getDefaultInstance(), credential)
-				.setApplicationName(APPLICATION_NAME)
-				.build();
-	}
-	
-	public static void main(String[] args) throws IOException, GeneralSecurityException {
-		//sheetsService = getSheetsService();
-		
-		//////////////////////////////////////
-		//String range = "A1:A500";
-		
-//		PRINT VALUES IN SPREADSHEET
-//		ValueRange response = sheetsService.spreadsheets().values()
-//				.get(SPREADSHEET_ID, range)
-//				.execute();
-//		
-//		List<List<Object>> values = response.getValues();
-//		
-//		if (values == null || values.isEmpty()) {
-//			System.out.println("No data found.");
-//		} else {
-//			for(List row : values) {
-//				System.out.printf("1: %s \n", row.get(0));
-//			}
-//		}
-//		
-		//////////////////////////////////////	
-//		
-//		String url = "https://www.canada.ca/fr/agence-revenu/services/paiements-arc/paiements-particuliers/faire-paiement.html";
-//		addEntry(url);
-//		
-		
-		//////////////////////////////////////
-		//CHANGE VALUES IN SPREADSHEET OF SPECIFIC ENTRY
-		
-//		ValueRange body = new ValueRange()
-//				.setValues(Arrays.asList( 
-//						Arrays.asList("changed it lets go!")
-//				));
-//		
-//		UpdateValuesResponse result = sheetsService.spreadsheets().values()
-//				.update(SPREADSHEET_ID, "A5", body)
-//				.setValueInputOption("RAW")
-//				.execute();
-//		
-//		//////////////////////////////////////
-		//DELETE SPECIFIC ENTRY FROM SPREADSHEET
-//		
-//		DeleteDimensionRequest deleteRequest = new DeleteDimensionRequest()
-//				.setRange(
-//						new DimensionRange()
-//						.setSheetId(0)
-//						.setDimension("ROWS")
-//						.setStartIndex(6) //can give index of url in the cj map
-//						.setEndIndex(7)
-//				);
-//		
-//		List<Request> requests = new ArrayList<>();
-//		requests.add(new Request().setDeleteDimension(deleteRequest));
-//		
-//		BatchUpdateSpreadsheetRequest bodyDelete = new BatchUpdateSpreadsheetRequest().setRequests(requests);
-//		sheetsService.spreadsheets().batchUpdate(SPREADSHEET_ID, bodyDelete).execute();
-	}
-	
 	public static void addEntry(String url) throws IOException, GeneralSecurityException {
-		sheetsService = getSheetsService();
-		String range = "A1:A500";
+		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+		final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
+		final String range = "A970:A1500";
+		Sheets service =
+				new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+						.setApplicationName(APPLICATION_NAME)
+						.build();
 		ValueRange appendBody = new ValueRange()
-				.setValues(Arrays.asList( 
+				.setValues(Arrays.asList(
 						Arrays.asList(url)
 				));
-		
+
 		try {
-			AppendValuesResponse appendResult = sheetsService.spreadsheets().values()
-					.append(SPREADSHEET_ID, range, appendBody)
+			AppendValuesResponse appendResult = service.spreadsheets().values()
+					.append(spreadsheetId, range, appendBody)
 					.setValueInputOption("USER_ENTERED")
 					.setInsertDataOption("INSERT_ROWS")
 					.setIncludeValuesInResponse(true)
@@ -138,7 +88,38 @@ public class GoogleSheetsAPI {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
+
+	/**
+	 * Prints the names and majors of students in a sample spreadsheet:
+	 * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+	 */
+	public static void main(String... args) throws IOException, GeneralSecurityException {
+		// Build a new authorized API client service.
+//		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+//		final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
+//		final String range = "A1050:A1100";
+//		Sheets service =
+//				new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//						.setApplicationName(APPLICATION_NAME)
+//						.build();
+//		ValueRange response = service.spreadsheets().values()
+//				.get(spreadsheetId, range)
+//				.execute();
+//		List<List<Object>> values = response.getValues();
+//		if (values == null || values.isEmpty()) {
+//			System.out.println("No data found.");
+//		} else {
+//			int i = 0;
+//			for (List row : values) {
+//				i++;
+//				// Print columns A and E, which correspond to indices 0 and 4.
+//				System.out.println(i);
+//				if(row.size() > 0)
+//					System.out.printf(i + ": %s, \n", row.get(0));
+//				else
+//					System.out.println("test");
+//			}
+//		}
+	}
+
 }
