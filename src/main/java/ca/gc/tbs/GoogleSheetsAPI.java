@@ -34,7 +34,7 @@ public class GoogleSheetsAPI {
 	 * If modifying these scopes, delete your previously saved tokens/ folder.
 	 */
 	private static final List<String> SCOPES =
-			Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+			Collections.singletonList(SheetsScopes.SPREADSHEETS);
 	private static final String CREDENTIALS_FILE_PATH = "/spreadsheetCredentials.json";
 
 	/**
