@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class GoogleSheetsAPI {
-	private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
+	private static final String APPLICATION_NAME = "Cronjob Tier 2 URLs";
 	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 	private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
@@ -63,6 +63,7 @@ public class GoogleSheetsAPI {
 		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
 		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
 	}
+
 	public static void addEntry(String url) throws IOException, GeneralSecurityException {
 		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 		final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
@@ -88,38 +89,31 @@ public class GoogleSheetsAPI {
 			e.printStackTrace();
 		}
 	}
-
 	/**
 	 * Prints the names and majors of students in a sample spreadsheet:
 	 * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
 	 */
 	public static void main(String... args) throws IOException, GeneralSecurityException {
 		// Build a new authorized API client service.
-//		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-//		final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
-//		final String range = "A1050:A1100";
-//		Sheets service =
-//				new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-//						.setApplicationName(APPLICATION_NAME)
-//						.build();
-//		ValueRange response = service.spreadsheets().values()
-//				.get(spreadsheetId, range)
-//				.execute();
-//		List<List<Object>> values = response.getValues();
+		final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+		final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
+		final String range = "A970:A1500";
+		Sheets service =
+				new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+						.setApplicationName(APPLICATION_NAME)
+						.build();
+		ValueRange response = service.spreadsheets().values()
+				.get(spreadsheetId, range)
+				.execute();
+		List<List<Object>> values = response.getValues();
 //		if (values == null || values.isEmpty()) {
 //			System.out.println("No data found.");
 //		} else {
-//			int i = 0;
 //			for (List row : values) {
-//				i++;
+//				System.out.println("URL: ");
 //				// Print columns A and E, which correspond to indices 0 and 4.
-//				System.out.println(i);
-//				if(row.size() > 0)
-//					System.out.printf(i + ": %s, \n", row.get(0));
-//				else
-//					System.out.println("test");
+//				System.out.printf("%s, \n", row.get(0));
 //			}
 //		}
 	}
-
 }
