@@ -400,3 +400,11 @@ Feedback Tool.iml
 .idea/libraries/Maven__com_google_guava_guava_31_0_1_android.xml
 .idea/libraries/Maven__com_google_http_client_google_http_client_gson_1_42_2.xml
 .idea/libraries/Maven__org_checkerframework_checker_qual_3_12_0.xml
+.idea/libraries/Maven__org_slf4j_slf4j_api_2_0_3.xml
+.idea/libraries/Maven__org_json_json_20160212.xml
+.idea/libraries/Maven__io_opencensus_opencensus_contrib_http_util_0_28_0.xml
+.idea/libraries/Maven__io_opencensus_opencensus_api_0_28_0.xml
+.idea/libraries/Maven__com_google_oauth_client_google_oauth_client_1_31_5.xml
+.idea/libraries/Maven__com_google_http_client_google_http_client_1_39_2.xml
+.idea/google-java-format.xml
+.idea/codeStyles/codeStyleConfig.xml
