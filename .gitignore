@@ -412,4 +412,4 @@ Feedback Tool.iml
 .idea/libraries/Maven__org_apache_commons_commons_csv_1_9_0.xml
 .idea/libraries/Maven__commons_io_commons_io_2_11_0.xml
 .idea/libraries/Maven__commons_beanutils_commons_beanutils_1_9_4.xml
-src/main/resources/service_account.p12
+src/main/resources/service-account.p12
