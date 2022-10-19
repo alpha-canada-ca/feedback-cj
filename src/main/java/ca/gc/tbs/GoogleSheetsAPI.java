@@ -35,7 +35,7 @@ public class GoogleSheetsAPI {
                 .setJsonFactory(JSON_FACTORY)
                 .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
                 .setServiceAccountScopes(Collections.singleton(SheetsScopes.SPREADSHEETS))
-                .setServiceAccountPrivateKeyFromP12File(new File("/service_account.p12"))
+                .setServiceAccountPrivateKeyFromP12File(new File("src/main/resources/service_account.p12"))
                 .build();
 
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
