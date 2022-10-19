@@ -10,9 +10,10 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -29,14 +30,20 @@ public class GoogleSheetsAPI {
     private static NetHttpTransport HTTP_TRANSPORT;
 
     public static void appendURL(String url) throws GeneralSecurityException, IOException {
+
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        keystore.load(GoogleSheetsAPI.class.getClassLoader().getResourceAsStream("service-account.p12"), "notasecret".toCharArray());
+        PrivateKey pk = (PrivateKey) keystore.getKey("privatekey", "notasecret".toCharArray());
+
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
         GoogleCredential credential = new GoogleCredential.Builder().setTransport(HTTP_TRANSPORT)
                 .setJsonFactory(JSON_FACTORY)
                 .setServiceAccountId(SERVICE_ACCOUNT_EMAIL)
                 .setServiceAccountScopes(Collections.singleton(SheetsScopes.SPREADSHEETS))
-                .setServiceAccountPrivateKeyFromP12File(new File("src/main/resources/service_account.p12"))
+                .setServiceAccountPrivateKey(pk)
                 .build();
+
 
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
@@ -57,6 +64,10 @@ public class GoogleSheetsAPI {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) throws GeneralSecurityException, IOException {
+        appendURL("test");
     }
 
 }
