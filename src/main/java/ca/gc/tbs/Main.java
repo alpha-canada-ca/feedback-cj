@@ -160,46 +160,43 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        this.clean("tous es clair et bien structurer merci");
-        this.clean("confirming that my bank account was changed to my new account  , seeing the next hst payment, and looking at the status of my 2018 taxes ");
-        this.clean("je voulais exporter d'un autre pays et non du canada");
-        this.clean("testing 123");
-//        Airtable airTableKey = new Airtable().configure(this.airtableKey);
-//
-//        this.mainBase = airTableKey.base(this.problemAirtableBase);
-//        this.healthBase = airTableKey.base(this.healthAirtableBase);
-//        this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
-//        this.travelBase = airTableKey.base(this.travelAirtableBase);
-//        this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
-//
-//        this.removeJunkDataTTS();
-//
-//        this.importTier1();
-//        this.importTier2();
-//
-//        this.getPageTitleIds(mainBase);
-//        this.getPageTitleIds(healthBase);
-//        this.getPageTitleIds(CRA_Base);
-//        this.getPageTitleIds(travelBase);
-//        this.getPageTitleIds(IRCC_Base);
-//
-//        this.getMLTagIds(mainBase);
-//        this.getMLTagIds(healthBase);
-//        this.getMLTagIds(CRA_Base);
-//        this.getMLTagIds(travelBase);
-//        this.getMLTagIds(IRCC_Base);
-//
-//        this.getURLLinkIds(mainBase);
-//        this.getURLLinkIds(healthBase);
-//        this.getURLLinkIds(CRA_Base);
-//        this.getURLLinkIds(travelBase);
-//        this.getURLLinkIds(IRCC_Base);
-//
-//        this.removePersonalInfoExitSurvey();
-//        this.removePersonalInfoProblems();
-//        this.autoTag();
-//        this.airTableSpreadsheetSync();
-//        this.completeProcessing();
+
+        Airtable airTableKey = new Airtable().configure(this.airtableKey);
+
+        this.mainBase = airTableKey.base(this.problemAirtableBase);
+        this.healthBase = airTableKey.base(this.healthAirtableBase);
+        this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
+        this.travelBase = airTableKey.base(this.travelAirtableBase);
+        this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
+
+        this.removeJunkDataTTS();
+
+        this.importTier1();
+        this.importTier2();
+
+        this.getPageTitleIds(mainBase);
+        this.getPageTitleIds(healthBase);
+        this.getPageTitleIds(CRA_Base);
+        this.getPageTitleIds(travelBase);
+        this.getPageTitleIds(IRCC_Base);
+
+        this.getMLTagIds(mainBase);
+        this.getMLTagIds(healthBase);
+        this.getMLTagIds(CRA_Base);
+        this.getMLTagIds(travelBase);
+        this.getMLTagIds(IRCC_Base);
+
+        this.getURLLinkIds(mainBase);
+        this.getURLLinkIds(healthBase);
+        this.getURLLinkIds(CRA_Base);
+        this.getURLLinkIds(travelBase);
+        this.getURLLinkIds(IRCC_Base);
+
+        this.removePersonalInfoExitSurvey();
+        this.removePersonalInfoProblems();
+        this.autoTag();
+        this.airTableSpreadsheetSync();
+        this.completeProcessing();
     }
 
     // Use this function to test removing personal information from a comment after any changes to cleaning script. (test case)
