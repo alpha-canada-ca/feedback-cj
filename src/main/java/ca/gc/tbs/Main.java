@@ -5,7 +5,6 @@ import ca.gc.tbs.domain.TopTaskSurvey;
 import ca.gc.tbs.repository.ProblemRepository;
 import ca.gc.tbs.repository.TopTaskRepository;
 import ca.gc.tbs.service.ContentService;
-import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
 import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
@@ -43,9 +42,9 @@ public class Main implements CommandLineRunner {
     private final Set<String> tier2Spreadsheet = new HashSet<>();
     private final HashMap<String, String[]> tier1Spreadsheet = new HashMap<>();
 
-    private final HashMap<String, String> problemPageTitleIds = new HashMap<>();
-    private final HashMap<String, String> problemUrlLinkIds = new HashMap<>();
-    private final HashMap<String, String> problemMlTagIds = new HashMap<>();
+    private final HashMap<String, String> mainPageTitleIds = new HashMap<>();
+    private final HashMap<String, String> mainUrlLinkIds = new HashMap<>();
+    private final HashMap<String, String> mainMlTagIds = new HashMap<>();
 
     private final HashMap<String, String> healthPageTitleIds = new HashMap<>();
     private final HashMap<String, String> healthUrlLinkIds = new HashMap<>();
@@ -117,7 +116,7 @@ public class Main implements CommandLineRunner {
 
     public HashMap<String, String> selectMapPageTitleIds(Base base) {
         if (base.equals(mainBase))
-            return this.problemPageTitleIds;
+            return this.mainPageTitleIds;
         if (base.equals(healthBase))
             return this.healthPageTitleIds;
         if (base.equals(CRA_Base))
@@ -131,7 +130,7 @@ public class Main implements CommandLineRunner {
 
     public HashMap<String, String> selectMapUrlLinkIds(Base base) {
         if (base.equals(mainBase))
-            return this.problemUrlLinkIds;
+            return this.mainUrlLinkIds;
         if (base.equals(healthBase))
             return this.healthUrlLinkIds;
         if (base.equals(CRA_Base))
@@ -145,7 +144,7 @@ public class Main implements CommandLineRunner {
 
     public HashMap<String, String> selectMapMLTagIds(Base base) {
         if (base.equals(mainBase))
-            return this.problemMlTagIds;
+            return this.mainMlTagIds;
         if (base.equals(healthBase))
             return this.healthMlTagIds;
         if (base.equals(CRA_Base))
@@ -161,42 +160,46 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Airtable airTableKey = new Airtable().configure(this.airtableKey);
-
-        this.mainBase = airTableKey.base(this.problemAirtableBase);
-        this.healthBase = airTableKey.base(this.healthAirtableBase);
-        this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
-        this.travelBase = airTableKey.base(this.travelAirtableBase);
-        this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
-
-        this.removeJunkDataTTS();
-
-        this.importTier1();
-        this.importTier2();
-
-        this.getPageTitleIds(mainBase);
-        this.getPageTitleIds(healthBase);
-        this.getPageTitleIds(CRA_Base);
-        this.getPageTitleIds(travelBase);
-        this.getPageTitleIds(IRCC_Base);
-
-        this.getMLTagIds(mainBase);
-        this.getMLTagIds(healthBase);
-        this.getMLTagIds(CRA_Base);
-        this.getMLTagIds(travelBase);
-        this.getMLTagIds(IRCC_Base);
-
-        this.getURLLinkIds(mainBase);
-        this.getURLLinkIds(healthBase);
-        this.getURLLinkIds(CRA_Base);
-        this.getURLLinkIds(travelBase);
-        this.getURLLinkIds(IRCC_Base);
-
-        this.removePersonalInfoExitSurvey();
-        this.removePersonalInfoProblems();
-        this.autoTag();
-        this.airTableSpreadsheetSync();
-        this.completeProcessing();
+        this.clean("tous es clair et bien structurer merci");
+        this.clean("confirming that my bank account was changed to my new account  , seeing the next hst payment, and looking at the status of my 2018 taxes ");
+        this.clean("je voulais exporter d'un autre pays et non du canada");
+        this.clean("testing 123");
+//        Airtable airTableKey = new Airtable().configure(this.airtableKey);
+//
+//        this.mainBase = airTableKey.base(this.problemAirtableBase);
+//        this.healthBase = airTableKey.base(this.healthAirtableBase);
+//        this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
+//        this.travelBase = airTableKey.base(this.travelAirtableBase);
+//        this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
+//
+//        this.removeJunkDataTTS();
+//
+//        this.importTier1();
+//        this.importTier2();
+//
+//        this.getPageTitleIds(mainBase);
+//        this.getPageTitleIds(healthBase);
+//        this.getPageTitleIds(CRA_Base);
+//        this.getPageTitleIds(travelBase);
+//        this.getPageTitleIds(IRCC_Base);
+//
+//        this.getMLTagIds(mainBase);
+//        this.getMLTagIds(healthBase);
+//        this.getMLTagIds(CRA_Base);
+//        this.getMLTagIds(travelBase);
+//        this.getMLTagIds(IRCC_Base);
+//
+//        this.getURLLinkIds(mainBase);
+//        this.getURLLinkIds(healthBase);
+//        this.getURLLinkIds(CRA_Base);
+//        this.getURLLinkIds(travelBase);
+//        this.getURLLinkIds(IRCC_Base);
+//
+//        this.removePersonalInfoExitSurvey();
+//        this.removePersonalInfoProblems();
+//        this.autoTag();
+//        this.airTableSpreadsheetSync();
+//        this.completeProcessing();
     }
 
     // Use this function to test removing personal information from a comment after any changes to cleaning script. (test case)
@@ -205,6 +208,9 @@ public class Main implements CommandLineRunner {
                 "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
     }
 
+    public void clean(String sentence) {
+        String sentenceCleaned = this.contentService.cleanContent(sentence);
+    }
 
     //This function removes white space values from comments to improve the filter for write in comments on the Feedback-Viewer.
     public void removeJunkDataTTS() {
@@ -491,23 +497,22 @@ public class Main implements CommandLineRunner {
                     // LAST condition: check if conditions met to go to main AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
 
-                        if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+                        if (!this.mainUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
                         }
-                        airProblem.getURLLinkIds().add(this.problemUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-                        if (!this.problemPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+                        airProblem.getURLLinkIds().add(this.mainUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
+                        if (!this.mainPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
                             this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
                         }
-                        airProblem.getPageTitleIds().add(this.problemPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+                        airProblem.getPageTitleIds().add(this.mainPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
 
                         for (String tag : problem.getTags()) {
-                            if (this.problemMlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.problemMlTagIds.get(tag.trim().toUpperCase()));
+                            if (this.mainMlTagIds.containsKey(tag.trim().toUpperCase())) {
+                                airProblem.getTags().add(this.mainMlTagIds.get(tag.trim().toUpperCase()));
                             } else {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
-
                         setAirProblemAttributes(airProblem, problem);
                         problemTable.create(airProblem);
                         problem.setAirTableSync("true");
@@ -515,8 +520,6 @@ public class Main implements CommandLineRunner {
                     }
                     // Check if conditions met to go to health AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
-                        AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                        airProblem.setUTM(UTM_value);
                         if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
                         }
@@ -540,8 +543,6 @@ public class Main implements CommandLineRunner {
                     }
                     // Check if conditions met to go to CRA AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("cra")) {
-                        AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                        airProblem.setUTM(UTM_value);
 
                         if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
@@ -566,11 +567,7 @@ public class Main implements CommandLineRunner {
                         problem.setAirTableSync("true");
                         System.out.println("Processed record : " + i + " For CRA, Date: " + airProblem.getDate());
                     }
-
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("travel")) {
-                        AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                        airProblem.setUTM(UTM_value);
-
                         if (!this.travelUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), travelBase, airtableURLLink);
                         }
@@ -595,8 +592,6 @@ public class Main implements CommandLineRunner {
                         problem.setAirTableSync("true");
                     }
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("ircc")) {
-                        AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                        airProblem.setUTM(UTM_value);
 
                         if (!this.IRCC_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), IRCC_Base, airtableURLLink);
@@ -732,27 +727,4 @@ public class Main implements CommandLineRunner {
         baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
     }
 
-    public ProblemRepository getProblemRepository() {
-        return problemRepository;
-    }
-
-    public void setProblemRepository(ProblemRepository problemRepository) {
-        this.problemRepository = problemRepository;
-    }
-
-    public TopTaskRepository getTopTaskRepository() {
-        return topTaskRepository;
-    }
-
-    public void setTopTaskRepository(TopTaskRepository topTaskRepository) {
-        this.topTaskRepository = topTaskRepository;
-    }
-
-    public ContentService getContentService() {
-        return contentService;
-    }
-
-    public void setContentService(ContentService contentService) {
-        this.contentService = contentService;
-    }
 }
