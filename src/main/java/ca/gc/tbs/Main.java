@@ -5,6 +5,7 @@ import ca.gc.tbs.domain.TopTaskSurvey;
 import ca.gc.tbs.repository.ProblemRepository;
 import ca.gc.tbs.repository.TopTaskRepository;
 import ca.gc.tbs.service.ContentService;
+import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
 import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
