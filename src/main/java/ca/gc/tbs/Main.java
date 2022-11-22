@@ -193,40 +193,20 @@ public class Main implements CommandLineRunner {
         this.getURLLinkIds(IRCC_Base);
 
         this.removePersonalInfoExitSurvey();
-        this.removePersonalInfo();
+        this.removePersonalInfoProblems();
         this.autoTag();
         this.airTableSpreadsheetSync();
         this.completeProcessing();
     }
 
-    // Use this function to test removing personal information from a comment after
-    // any changes to cleaning code. (test case)
+    // Use this function to test removing personal information from a comment after any changes to cleaning script. (test case)
     public Boolean testRemovePII() {
         return containsHTML(
                 "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
     }
 
 
-    // This function finds data that has already been run by airTableSync and sets
-    // processed values to true (not in use)
-    public void flagAlreadyAddedData() {
-        List<Problem> pList = this.problemRepository.findByAirTableSync("true");
-        for (Problem problem : pList) {
-            if (problem != null) {
-                problem.setAutoTagProcessed("true");
-                problem.setPersonalInfoProcessed("true");
-                problem.setProcessed("true");
-                this.problemRepository.save(problem);
-            }
-        }
-    }
-
-    /*
-     * This function removes any blank values so that the filter for write in
-     * comments on the feedback data download tool is able to filter for entries
-     * with comments. TODO: Look for ways to make this function run faster Mark
-     * entries as processed.
-     */
+    //This function removes white space values from comments to improve the filter for write in comments on the Feedback-Viewer.
     public void removeJunkDataTTS() {
         List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
         System.out.println("Amount of non processed entries (TTS) : " + tList.size());
@@ -279,34 +259,17 @@ public class Main implements CommandLineRunner {
         return false;
     }
 
-    // Function resets problems that meet if criteria by setting variables to false
-    // forcing them to get processed again (not being used)
-    public void resetEverything() {
-        List<Problem> pList = this.problemRepository.findAll();
-        for (Problem problem : pList) {
-            // exclude health for right now
-            if (!problem.getTitle().contains("Symptoms") || !problem.getTitle().contains("Prevention+risks")) {
-                problem.setAutoTagProcessed("true");
-                problem.setAirTableSync("false");
-                problem.setPersonalInfoProcessed("false");
-                problem.setProcessed("false");
-            }
-        }
-    }
 
-    // This function grabs all the models and associated URLs from the Google
-    // spreadsheet.
+    // This function appends ALL model & bases to the TIER 1 spreadsheet map.
     public void importTier1() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
         try {
             for (final CSVRecord record : parser) {
                 try {
-                    // remove .toLowerCase() for models, they are case-sensitive, look for a fix in
-                    // python code.
                     String[] modelBase = {record.get("MODEL"), record.get("BASE").toLowerCase()};
                     tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);
                 } catch (Exception e) {
@@ -325,7 +288,7 @@ public class Main implements CommandLineRunner {
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
         try {
             for (final CSVRecord record : parser) {
                 try {
@@ -341,8 +304,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // This function grabs all problems that have not been assigned auto tags and
-    // assigns tags.
+    // This function grabs all non-processed problems without tags and assigns tags.
     public void autoTag() {
         List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
         pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
@@ -386,6 +348,7 @@ public class Main implements CommandLineRunner {
 
     }
 
+    //TODO: add a check for null
     public String removeQueryAfterHTML(String url) {
         String[] arrOfStr = url.split("(?<=.html)");
         return arrOfStr[0];
@@ -418,34 +381,9 @@ public class Main implements CommandLineRunner {
         exit(0);
     }
 
-    // This function sets AirTableSync value to false for all problems. (not being
-    // used)
-    public void resetAirTableFlag() {
-        List<Problem> pList = this.problemRepository.findByAirTableSync("true");
-        int i = 0;
-        for (Problem problem : pList) {
-            i++;
-            if (problem.getSection().equalsIgnoreCase("ptr")) {
-                problem.setAirTableSync("false");
-                this.problemRepository.save(problem);
-                System.out.println("Reset PTR: " + i);
-            }
-        }
-    }
 
-    // This function sets PersonalInfoProcessed value to true for all problems. (not
-    // being used)
-    public void setPrivateFlagForSync() {
-        List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed("false");
-        for (Problem problem : pList) {
-            problem.setPersonalInfoProcessed("true");
-            this.problemRepository.save(problem);
-        }
-    }
-
-    // This function finds problems that have not been cleaned and runs them through
-    // the cleaning code (cleanContent in FeedbackViewer repo)
-    public void removePersonalInfo() {
+    // This function cleans problem comments that have not been cleaned using the cleaning script
+    public void removePersonalInfoProblems() {
         System.out.println("Starting private info removal...");
         List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
         pList.addAll(this.problemRepository.findByPersonalInfoProcessed("false"));
@@ -462,9 +400,7 @@ public class Main implements CommandLineRunner {
         System.out.println("Private info removed...");
     }
 
-    // This function finds tasks (Exit Survey) that have not been cleaned and runs
-    // them through the cleaning code.
-    // (cleanContent in FeedbackViewer Repository)
+    // This function cleans tasks (Exit Survey) that have not been cleaned using the cleaning script
     public void removePersonalInfoExitSurvey() {
         System.out.println("Starting private info removal TOP TASK...");
         List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
@@ -497,8 +433,8 @@ public class Main implements CommandLineRunner {
         System.out.println("Private info removed top task...");
     }
 
-    // This function populates problem entries to AirTable base.
 
+    // This function populates entries to the AirTable base.
     public void airTableSpreadsheetSync() {
         // Connect to AirTable bases
         @SuppressWarnings("unchecked")
@@ -525,19 +461,20 @@ public class Main implements CommandLineRunner {
 
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
                 boolean emptyComment = problem.getProblemDetails().trim().equals("");
-                String UTM_value = returnQueryAfterHTML(problem.getUrl());
-                problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
+
                 if (emptyComment) {
                     System.out.println("Empty comment, deleting entry...");
                     problemRepository.delete(problem);
+                    continue;
                 }
                 if (containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/")) {
                     this.problemRepository.delete(problem);
                     continue;
                 }
-                // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set
-                // sync to true
-                if (tier1Spreadsheet.get(problem.getUrl()) == null && !tier2Spreadsheet.contains(problem.getUrl())) {
+                String UTM_value = returnQueryAfterHTML(problem.getUrl());
+                problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
+                // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
+                if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
                     System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
                     tier2Spreadsheet.add(problem.getUrl());
                     GoogleSheetsAPI.appendURL(problem.getUrl());
@@ -549,11 +486,11 @@ public class Main implements CommandLineRunner {
                     System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
                     problem.setAirTableSync("true");
                 } else {
-
-                    // Check if conditions met to go to main AirTable and populate.
+                    AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
+                    airProblem.setUTM(UTM_value);
+                    // LAST condition: check if conditions met to go to main AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
-                        AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                        airProblem.setUTM(UTM_value);
+
                         if (!this.problemUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
                         }
