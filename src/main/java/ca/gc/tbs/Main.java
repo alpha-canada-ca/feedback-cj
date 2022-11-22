@@ -164,16 +164,19 @@ public class Main implements CommandLineRunner {
 
         Airtable airTableKey = new Airtable().configure(this.airtableKey);
 
+        System.out.println("---------------------CONNECTING TO AIRTABLE BASES---------------------");
         this.mainBase = airTableKey.base(this.problemAirtableBase);
         this.healthBase = airTableKey.base(this.healthAirtableBase);
         this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
         this.travelBase = airTableKey.base(this.travelAirtableBase);
         this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
-
+        System.out.println("---------------------REMOVE JUNK DATA TTS---------------------");
         this.removeJunkDataTTS();
 
+        System.out.println("---------------------IMPORT SPREADSHEETS---------------------");
         this.importTier1();
         this.importTier2();
+
 
         this.getPageTitleIds(mainBase);
         this.getPageTitleIds(healthBase);
@@ -193,10 +196,15 @@ public class Main implements CommandLineRunner {
         this.getURLLinkIds(travelBase);
         this.getURLLinkIds(IRCC_Base);
 
+        System.out.println("---------------------REMOVE PERSONAL INFO TTS---------------------");
         this.removePersonalInfoExitSurvey();
+        System.out.println("---------------------REMOVE PERSONAL INFO PROBLEM---------------------");
         this.removePersonalInfoProblems();
+        System.out.println("---------------------AUTO TAG---------------------");
         this.autoTag();
+        System.out.println("---------------------AIRTABLE & SPREADSHEET SYNC---------------------");
         this.airTableSpreadsheetSync();
+        System.out.println("---------------------MARK AS PROCESSED ---------------------");
         this.completeProcessing();
     }
 
@@ -312,7 +320,7 @@ public class Main implements CommandLineRunner {
     public void autoTag() {
         List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
         pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
-        System.out.println(pList.size());
+        System.out.println("Amount of entries to be tagged: " + pList.size());
         for (Problem problem : pList) {
             String model = "";
             try {
@@ -388,7 +396,6 @@ public class Main implements CommandLineRunner {
 
     // This function cleans problem comments that have not been cleaned using the cleaning script
     public void removePersonalInfoProblems() {
-        System.out.println("Starting private info removal...");
         List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
         pList.addAll(this.problemRepository.findByPersonalInfoProcessed("false"));
         for (Problem problem : pList) {
@@ -406,7 +413,6 @@ public class Main implements CommandLineRunner {
 
     // This function cleans tasks (Exit Survey) that have not been cleaned using the cleaning script
     public void removePersonalInfoExitSurvey() {
-        System.out.println("Starting private info removal TOP TASK...");
         List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
         tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
         for (TopTaskSurvey task : tList) {
@@ -434,7 +440,7 @@ public class Main implements CommandLineRunner {
                         + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
             }
         }
-        System.out.println("Private info removed top task...");
+        System.out.println("Private info removed...");
     }
 
 
@@ -451,12 +457,10 @@ public class Main implements CommandLineRunner {
         Table<AirTableProblemEnhanced> travelTable = travelBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
         @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> irccTable = IRCC_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-
-        System.out.println("Connected to Airtable");
         // Find problems that have not been run through this function
         List<Problem> pList = this.problemRepository.findByAirTableSync(null);
         pList.addAll(this.problemRepository.findByAirTableSync("false"));
-        System.out.println("Connected to MongoDB");
+        System.out.println("Connected to MongoDB & Airtable");
         System.out.println("Found " + pList.size() + " records that need to be added.");
         int i = 1;
         int maxToSync = 150;
