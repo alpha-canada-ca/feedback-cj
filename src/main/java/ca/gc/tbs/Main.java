@@ -30,8 +30,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.lang.System.exit;
@@ -40,34 +38,38 @@ import static java.lang.System.exit;
 @ComponentScan(basePackages = {"ca.gc.tbs.domain", "ca.gc.tbs.repository"})
 @EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class Main implements CommandLineRunner {
-
-    public static final SimpleDateFormat INPUT_FORMAT = new SimpleDateFormat("EEE MMM dd yyyy");
-    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    private static Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     // Tier 2 entries do not populate to AirTable.
     private final Set<String> tier2Spreadsheet = new HashSet<>();
     private final HashMap<String, String[]> tier1Spreadsheet = new HashMap<>();
+
     private final HashMap<String, String> problemPageTitleIds = new HashMap<>();
-    private final HashMap<String, String> healthPageTitleIds = new HashMap<>();
-    private final HashMap<String, String> CRA_PageTitleIds = new HashMap<>();
-    private final HashMap<String, String> travelPageTitleIds = new HashMap<>();
-    private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
     private final HashMap<String, String> problemUrlLinkIds = new HashMap<>();
-    private final HashMap<String, String> healthUrlLinkIds = new HashMap<>();
-    private final HashMap<String, String> CRA_UrlLinkIds = new HashMap<>();
-    private final HashMap<String, String> travelUrlLinkIds = new HashMap<>();
-    private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> problemMlTagIds = new HashMap<>();
+
+    private final HashMap<String, String> healthPageTitleIds = new HashMap<>();
+    private final HashMap<String, String> healthUrlLinkIds = new HashMap<>();
     private final HashMap<String, String> healthMlTagIds = new HashMap<>();
+
+    private final HashMap<String, String> CRA_PageTitleIds = new HashMap<>();
+    private final HashMap<String, String> CRA_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> CRA_MlTagIds = new HashMap<>();
+
+    private final HashMap<String, String> travelPageTitleIds = new HashMap<>();
+    private final HashMap<String, String> travelUrlLinkIds = new HashMap<>();
     private final HashMap<String, String> travelMlTagIds = new HashMap<>();
+
+    private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
+    private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> IRCC_MlTagIds = new HashMap<>();
+
     @Autowired
     private ProblemRepository problemRepository;
-    //
     @Autowired
     private TopTaskRepository topTaskRepository;
+
     private ContentService contentService = new ContentService();
+
     // Main AirTable
     @Value("${airtable.key}")
     private String airtableKey;
@@ -79,21 +81,25 @@ public class Main implements CommandLineRunner {
     private String airtableMLTags;
     @Value("${airtable.URL_link}")
     private String airtableURLLink;
-    // Main AirTable
     @Value("${airtable.base}")
     private String problemAirtableBase;
+
     // Health AirTable
     @Value("${health.airtable.base}")
     private String healthAirtableBase;
+
     // CRA AirTable
     @Value("${cra.airtable.base}")
     private String CRA_AirtableBase;
+
     // Travel AirTable
     @Value("${travel.airtable.base}")
     private String travelAirtableBase;
+
     // IRCC AirTable
     @Value("${ircc.airtable.base}")
     private String irccAirtableBase;
+
     private Base mainBase;
     private Base healthBase;
     private Base CRA_Base;
@@ -104,7 +110,7 @@ public class Main implements CommandLineRunner {
         new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
                 .run(args);
     }
-	
+
     public static String html2text(String html) {
         return Jsoup.parse(html).text();
     }
@@ -200,23 +206,6 @@ public class Main implements CommandLineRunner {
                 "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
     }
 
-    // This function sets problem entries to setAirTableSync="false" after date
-    // given to function
-    public void reSyncDataAfterDate(String date) throws ParseException {
-        Date afterDate = DATE_FORMAT.parse(date);
-        List<Problem> pList = this.problemRepository.findByAirTableSync("true");
-        for (Problem problem : pList) {
-            try {
-                Date problemDate = INPUT_FORMAT.parse(problem.getProblemDate());
-                if (problemDate.after(afterDate)) {
-                    problem.setAirTableSync("false");
-                    this.problemRepository.save(problem);
-                }
-            } catch (Exception e) {
-                System.out.println("Could not process: " + problem.getId() + ":" + problem.getProblemDate());
-            }
-        }
-    }
 
     // This function finds data that has already been run by airTableSync and sets
     // processed values to true (not in use)
@@ -312,7 +301,7 @@ public class Main implements CommandLineRunner {
                 new URL("https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
         try {
             for (final CSVRecord record : parser) {
                 try {
@@ -336,7 +325,7 @@ public class Main implements CommandLineRunner {
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
         try {
             for (final CSVRecord record : parser) {
                 try {
