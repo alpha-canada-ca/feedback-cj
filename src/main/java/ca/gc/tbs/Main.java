@@ -161,7 +161,6 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-
         Airtable airTableKey = new Airtable().configure(this.airtableKey);
 
         System.out.println("---------------------CONNECTING TO AIRTABLE BASES---------------------");
@@ -170,13 +169,19 @@ public class Main implements CommandLineRunner {
         this.CRA_Base = airTableKey.base(this.CRA_AirtableBase);
         this.travelBase = airTableKey.base(this.travelAirtableBase);
         this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
+
+        System.out.println("---------------------REMOVE PERSONAL INFO TTS---------------------");
+        this.removePersonalInfoExitSurvey();
+
+        System.out.println("---------------------REMOVE PERSONAL INFO PROBLEM---------------------");
+        this.removePersonalInfoProblems();
+
         System.out.println("---------------------REMOVE JUNK DATA TTS---------------------");
         this.removeJunkDataTTS();
 
         System.out.println("---------------------IMPORT SPREADSHEETS---------------------");
         this.importTier1();
         this.importTier2();
-
 
         this.getPageTitleIds(mainBase);
         this.getPageTitleIds(healthBase);
@@ -196,14 +201,12 @@ public class Main implements CommandLineRunner {
         this.getURLLinkIds(travelBase);
         this.getURLLinkIds(IRCC_Base);
 
-        System.out.println("---------------------REMOVE PERSONAL INFO TTS---------------------");
-        this.removePersonalInfoExitSurvey();
-        System.out.println("---------------------REMOVE PERSONAL INFO PROBLEM---------------------");
-        this.removePersonalInfoProblems();
         System.out.println("---------------------AUTO TAG---------------------");
         this.autoTag();
+
         System.out.println("---------------------AIRTABLE & SPREADSHEET SYNC---------------------");
         this.airTableSpreadsheetSync();
+
         System.out.println("---------------------MARK AS PROCESSED ---------------------");
         this.completeProcessing();
     }
@@ -230,27 +233,23 @@ public class Main implements CommandLineRunner {
                 continue;
             }
             if (task.getTaskOther() != null && task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0) {
+                System.out.println("found junk data.");
                 task.setTaskOther("");
-                task.setProcessed("true");
-                this.topTaskRepository.save(task);
             }
             if (task.getThemeOther() != null && task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0) {
+                System.out.println("found junk data.");
                 task.setThemeOther("");
-                task.setProcessed("true");
-                this.topTaskRepository.save(task);
             }
-            if (task.getTaskImproveComment() != null && task.getTaskImproveComment().length() != 0
-                    && (task.getTaskImproveComment().trim().equals("/") || task.getTaskImproveComment().trim().equals(""))) {
+            if (task.getTaskImproveComment() != null && task.getTaskImproveComment().trim().equals("") && task.getTaskImproveComment().length() != 0) {
+                System.out.println("found junk data.");
                 task.setTaskImproveComment("");
-                task.setProcessed("true");
-                this.topTaskRepository.save(task);
             }
-            if (task.getTaskWhyNotComment() != null && task.getTaskWhyNotComment().length() != 0
-                    && (task.getTaskWhyNotComment().trim().equals("/") || task.getTaskWhyNotComment().trim().equals(""))) {
+            if (task.getTaskWhyNotComment() != null && task.getTaskWhyNotComment().trim().equals("") && task.getTaskWhyNotComment().length() != 0) {
+                System.out.println("found junk data.");
                 task.setTaskWhyNotComment("");
-                task.setProcessed("true");
-                this.topTaskRepository.save(task);
             }
+            task.setProcessed("true");
+            this.topTaskRepository.save(task);
         }
     }
 
