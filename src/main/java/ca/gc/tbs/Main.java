@@ -482,7 +482,7 @@ public class Main implements CommandLineRunner {
                 problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
                 // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
-                    System.out.println(i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
+                    System.out.println("Processed record : " + i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
                     tier2Spreadsheet.add(problem.getUrl());
                     GoogleSheetsAPI.appendURL(problem.getUrl());
                     problem.setAirTableSync("true");
