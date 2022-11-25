@@ -60,6 +60,11 @@
             <version>1.4.9</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.sybit</groupId>
             <artifactId>airtable.java</artifactId>
             <version>0.2.0</version>
