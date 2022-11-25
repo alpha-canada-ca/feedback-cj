@@ -234,19 +234,19 @@ public class Main implements CommandLineRunner {
                 continue;
             }
             if (task.getTaskOther() != null && task.getTaskOther().trim().equals("") && task.getTaskOther().length() != 0) {
-                System.out.println("found junk data.");
+                System.out.println("found junk data in taskOther.");
                 task.setTaskOther("");
             }
             if (task.getThemeOther() != null && task.getThemeOther().trim().equals("") && task.getThemeOther().length() != 0) {
-                System.out.println("found junk data.");
+                System.out.println("found junk data in themeOther.");
                 task.setThemeOther("");
             }
             if (task.getTaskImproveComment() != null && task.getTaskImproveComment().trim().equals("") && task.getTaskImproveComment().length() != 0) {
-                System.out.println("found junk data.");
+                System.out.println("found junk data in taskImproveComment.");
                 task.setTaskImproveComment("");
             }
             if (task.getTaskWhyNotComment() != null && task.getTaskWhyNotComment().trim().equals("") && task.getTaskWhyNotComment().length() != 0) {
-                System.out.println("found junk data.");
+                System.out.println("found junk data in taskWhyNotComment.");
                 task.setTaskWhyNotComment("");
             }
             task.setProcessed("true");
