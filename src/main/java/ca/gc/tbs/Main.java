@@ -219,7 +219,8 @@ public class Main implements CommandLineRunner {
             if (task == null || containsHTML(task.getTaskOther()) || containsHTML(task.getThemeOther()) ||
                     containsHTML(task.getTaskImproveComment()) || containsHTML(task.getTaskWhyNotComment())) {
                 assert task != null;
-                System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink");
+                System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink,taskOther: " + task.getTaskOther()
+                        + ", themeOther: " + task.getThemeOther() + ", taskWhyNotComment: " + task.getTaskWhyNotComment() + ", taskImproveComment: " + task.getTaskImproveComment());
                 this.topTaskRepository.delete(task);
                 continue;
             }
@@ -592,6 +593,7 @@ public class Main implements CommandLineRunner {
     }
 
     public Boolean containsHTML(String comment) {
+        if (comment == null) return false;
         String parsedComment = Jsoup.parse(comment).text();
         return parsedComment.length() != comment.length();
     }
