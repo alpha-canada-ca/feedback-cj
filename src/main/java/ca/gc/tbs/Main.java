@@ -108,10 +108,6 @@ public class Main implements CommandLineRunner {
                 .run(args);
     }
 
-    public static String html2text(String html) {
-        return Jsoup.parse(html).text();
-    }
-
     // Main Loop, Runs all functions needed.
     @Override
     public void run(String... args) throws Exception {
@@ -674,6 +670,10 @@ public class Main implements CommandLineRunner {
         urlLink = urlLinkTable.create(urlLink);
         HashMap<String, String> baseURLMap = selectMapUrlLinkIds(base);
         baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
+    }
+
+    public String html2text(String html) {
+        return Jsoup.parse(html).text();
     }
 
     public HashMap<String, String> selectMapPageTitleIds(Base base) {
