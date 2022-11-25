@@ -10,6 +10,7 @@ import com.sybit.airtable.Base;
 import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -219,7 +220,7 @@ public class Main implements CommandLineRunner {
             if (task == null || containsHTML(task.getTaskOther()) || containsHTML(task.getThemeOther()) ||
                     containsHTML(task.getTaskImproveComment()) || containsHTML(task.getTaskWhyNotComment())) {
                 assert task != null;
-                System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink,taskOther: " + task.getTaskOther()
+                System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink, taskOther: " + task.getTaskOther()
                         + ", themeOther: " + task.getThemeOther() + ", taskWhyNotComment: " + task.getTaskWhyNotComment() + ", taskImproveComment: " + task.getTaskImproveComment());
                 this.topTaskRepository.delete(task);
                 continue;
@@ -594,8 +595,10 @@ public class Main implements CommandLineRunner {
 
     public Boolean containsHTML(String comment) {
         if (comment == null) return false;
-        String parsedComment = Jsoup.parse(comment).text();
-        return parsedComment.length() != comment.length();
+        // This normalizeSpace call was added because sometimes sentences are written with extra spaces between words which triggers as HTML.
+        comment = StringUtils.normalizeSpace(comment);
+        String parsedComment = Jsoup.parse(comment).text().trim();
+        return parsedComment.length() != comment.trim().length();
     }
 
     //TODO: add a check for null
