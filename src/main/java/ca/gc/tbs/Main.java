@@ -615,16 +615,6 @@ public class Main implements CommandLineRunner {
         return null;
     }
 
-    // Test removing personal information from a comment after any changes to cleaning script. (test case)
-    public Boolean testRemovePII() {
-        return containsHTML(
-                "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
-    }
-
-    public void clean(String sentence) {
-        String sentenceCleaned = this.contentService.cleanContent(sentence);
-    }
-
     // Sets attributes. Made it into a function to make the code look a bit more readable.
     public void setAirProblemAttributes(AirTableProblemEnhanced airProblem, Problem problem) {
         airProblem.setUniqueID(problem.getId());
