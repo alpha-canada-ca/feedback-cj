@@ -216,7 +216,8 @@ public class Main implements CommandLineRunner {
         List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
         System.out.println("Amount of non processed entries (TTS) : " + tList.size());
         for (TopTaskSurvey task : tList) {
-            if (task == null || containsHTML(task.getTaskOther(), task.getThemeOther(), task.getTaskImproveComment(), task.getTaskWhyNotComment())) {
+            if (task == null || containsHTML(task.getTaskOther()) || containsHTML(task.getThemeOther()) ||
+                    containsHTML(task.getTaskImproveComment()) || containsHTML(task.getTaskWhyNotComment())) {
                 assert task != null;
                 System.out.println("Deleting task: " + task.getId() + " , Task was null or had a hyperlink");
                 this.topTaskRepository.delete(task);
@@ -590,20 +591,9 @@ public class Main implements CommandLineRunner {
         exit(0);
     }
 
-    // Temp solution to combat users entering hyperlinks with href HTML tags
-    public boolean containsHTML(String... comments) {
-        for (String comment : comments) {
-            // System.out.println(comment.trim().replaceAll(" +", " ").length());
-            // System.out.println(html2text(comment).length());
-            // System.out.println(html2text(comment));
-            // System.out.println(comment.trim().replaceAll(" +", " "));
-            // for some reason, html2text subtracts 1 from the length.
-            if (comment != null && (comment.trim().replaceAll(" +", " ").length() != html2text(comment).length())) {
-                System.out.println("Detected HTML, deleting entry belonging to comment: " + comment);
-                return true;
-            }
-        }
-        return false;
+    public Boolean containsHTML(String comment) {
+        String parsedComment = Jsoup.parse(comment).text();
+        return parsedComment.length() != comment.length();
     }
 
     //TODO: add a check for null
@@ -669,10 +659,6 @@ public class Main implements CommandLineRunner {
         urlLink = urlLinkTable.create(urlLink);
         HashMap<String, String> baseURLMap = selectMapUrlLinkIds(base);
         baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
-    }
-
-    public String html2text(String html) {
-        return Jsoup.parse(html).text();
     }
 
     public HashMap<String, String> selectMapPageTitleIds(Base base) {
