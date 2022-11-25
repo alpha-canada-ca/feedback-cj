@@ -62,14 +62,11 @@ public class Main implements CommandLineRunner {
     private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
     private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> IRCC_MlTagIds = new HashMap<>();
-
+    private final ContentService contentService = new ContentService();
     @Autowired
     private ProblemRepository problemRepository;
     @Autowired
     private TopTaskRepository topTaskRepository;
-
-    private ContentService contentService = new ContentService();
-
     // Main AirTable
     @Value("${airtable.key}")
     private String airtableKey;
