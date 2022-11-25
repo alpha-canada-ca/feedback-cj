@@ -9,7 +9,6 @@ import com.sybit.airtable.Airtable;
 import com.sybit.airtable.Base;
 import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -250,9 +249,10 @@ public class Main implements CommandLineRunner {
                 new URL("https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+        final CSVFormat csvFormat = CSVFormat.Builder.create().setHeader().setAllowMissingColumnNames(true).build();
+        final Iterable<CSVRecord> records = csvFormat.parse(reader);
         try {
-            for (final CSVRecord record : parser) {
+            for (final CSVRecord record : records) {
                 try {
                     tier2Spreadsheet.add(record.get("URL").toLowerCase());
                 } catch (Exception e) {
@@ -261,7 +261,6 @@ public class Main implements CommandLineRunner {
                 }
             }
         } finally {
-            parser.close();
             reader.close();
         }
     }
@@ -272,9 +271,10 @@ public class Main implements CommandLineRunner {
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
                         .getInputStream(),
                 StandardCharsets.UTF_8);
-        final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+        final CSVFormat csvFormat = CSVFormat.Builder.create().setHeader().setAllowMissingColumnNames(true).build();
+        final Iterable<CSVRecord> records = csvFormat.parse(reader);
         try {
-            for (final CSVRecord record : parser) {
+            for (final CSVRecord record : records) {
                 try {
                     tier2Spreadsheet.add(record.get("URL").toLowerCase());
                 } catch (Exception e) {
@@ -283,7 +283,6 @@ public class Main implements CommandLineRunner {
                 }
             }
         } finally {
-            parser.close();
             reader.close();
         }
     }
