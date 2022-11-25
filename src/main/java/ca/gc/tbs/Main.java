@@ -112,48 +112,6 @@ public class Main implements CommandLineRunner {
         return Jsoup.parse(html).text();
     }
 
-    public HashMap<String, String> selectMapPageTitleIds(Base base) {
-        if (base.equals(mainBase))
-            return this.mainPageTitleIds;
-        if (base.equals(healthBase))
-            return this.healthPageTitleIds;
-        if (base.equals(CRA_Base))
-            return this.CRA_PageTitleIds;
-        if (base.equals(travelBase))
-            return this.travelPageTitleIds;
-        if (base.equals(IRCC_Base))
-            return this.IRCC_PageTitleIds;
-        return null;
-    }
-
-    public HashMap<String, String> selectMapUrlLinkIds(Base base) {
-        if (base.equals(mainBase))
-            return this.mainUrlLinkIds;
-        if (base.equals(healthBase))
-            return this.healthUrlLinkIds;
-        if (base.equals(CRA_Base))
-            return this.CRA_UrlLinkIds;
-        if (base.equals(travelBase))
-            return this.travelUrlLinkIds;
-        if (base.equals(IRCC_Base))
-            return this.IRCC_UrlLinkIds;
-        return null;
-    }
-
-    public HashMap<String, String> selectMapMLTagIds(Base base) {
-        if (base.equals(mainBase))
-            return this.mainMlTagIds;
-        if (base.equals(healthBase))
-            return this.healthMlTagIds;
-        if (base.equals(CRA_Base))
-            return this.CRA_MlTagIds;
-        if (base.equals(travelBase))
-            return this.travelMlTagIds;
-        if (base.equals(IRCC_Base))
-            return this.IRCC_MlTagIds;
-        return null;
-    }
-
     // Main Loop, Runs all functions needed.
     @Override
     public void run(String... args) throws Exception {
@@ -209,17 +167,56 @@ public class Main implements CommandLineRunner {
         this.completeProcessing();
     }
 
-    // Use this function to test removing personal information from a comment after any changes to cleaning script. (test case)
-    public Boolean testRemovePII() {
-        return containsHTML(
-                "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
+    // Scrubs tasks (Exit Survey) that have not been cleaned using the cleaning script
+    public void removePersonalInfoExitSurvey() {
+        List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
+        tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
+        for (TopTaskSurvey task : tList) {
+            try {
+                if (task.getThemeOther() != null) {
+                    String details = this.contentService.cleanContent(task.getThemeOther());
+                    task.setThemeOther(details);
+                }
+                if (task.getTaskOther() != null) {
+                    String details = this.contentService.cleanContent(task.getTaskOther());
+                    task.setTaskOther(details);
+                }
+                if (task.getTaskImproveComment() != null) {
+                    String details = this.contentService.cleanContent(task.getTaskImproveComment());
+                    task.setTaskImproveComment(details);
+                }
+                if (task.getTaskWhyNotComment() != null) {
+                    String details = this.contentService.cleanContent(task.getTaskWhyNotComment());
+                    task.setTaskWhyNotComment(details);
+                }
+                task.setPersonalInfoProcessed("true");
+                this.topTaskRepository.save(task);
+            } catch (Exception e) {
+                System.out.println("Could not process task: " + task.getId() + " : " + task.getDateTime() + " : " + task.getTaskOther() + " : "
+                        + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
+            }
+        }
+        System.out.println("Private info removed...");
     }
 
-    public void clean(String sentence) {
-        String sentenceCleaned = this.contentService.cleanContent(sentence);
+    // Scrubs comments that have not been cleaned using the cleaning script
+    public void removePersonalInfoProblems() {
+        List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
+        pList.addAll(this.problemRepository.findByPersonalInfoProcessed("false"));
+        for (Problem problem : pList) {
+            try {
+                String details = this.contentService.cleanContent(problem.getProblemDetails());
+                problem.setProblemDetails(details);
+                problem.setPersonalInfoProcessed("true");
+                this.problemRepository.save(problem);
+            } catch (Exception e) {
+                System.out.println("Could not process problem:" + problem.getId() + ":" + problem.getProblemDetails());
+            }
+        }
+        System.out.println("Private info removed...");
     }
 
-    //This function removes white space values from comments to improve the filter for write in comments on the Feedback-Viewer.
+    // Removes white space values from comments to improve the filter for write in comments on the Feedback-Viewer.
     public void removeJunkDataTTS() {
         List<TopTaskSurvey> tList = this.topTaskRepository.findByProcessed("false");
         System.out.println("Amount of non processed entries (TTS) : " + tList.size());
@@ -251,25 +248,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // Temp solution to combat users entering hyperlinks with href HTML tags
-    // This can be improved in the future to catch more cases - temp fix.
-    public boolean containsHTML(String... comments) {
-        for (String comment : comments) {
-            // System.out.println(comment.trim().replaceAll(" +", " ").length());
-            // System.out.println(html2text(comment).length());
-            // System.out.println(html2text(comment));
-            // System.out.println(comment.trim().replaceAll(" +", " "));
-            // for some reason, html2text subtracts 1 from the length.
-            if (comment != null && (comment.trim().replaceAll(" +", " ").length() != html2text(comment).length())) {
-                System.out.println("Detected HTML, deleting entry belonging to comment: " + comment);
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    // This function appends ALL model & bases to the TIER 1 spreadsheet map.
+    // Retrieves ALL model & bases and imports them to the TIER 1 map.
     public void importTier1() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv").openConnection()
@@ -279,8 +258,7 @@ public class Main implements CommandLineRunner {
         try {
             for (final CSVRecord record : parser) {
                 try {
-                    String[] modelBase = {record.get("MODEL"), record.get("BASE").toLowerCase()};
-                    tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);
+                    tier2Spreadsheet.add(record.get("URL").toLowerCase());
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -292,6 +270,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
+    // Retrieves ALL URLs and imports them to the TIER 2 map.
     public void importTier2() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
@@ -313,7 +292,58 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // This function grabs all non-processed problems without tags and assigns tags.
+    // Retrieves Page feedback statistics page IDs and adds them to a hashmap for their respective AirTable base.
+    private void getPageTitleIds(Base base) throws Exception {
+        @SuppressWarnings("unchecked")
+        Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
+        List<AirTableStat> stats = statsTable.select();
+        HashMap<String, String> m = selectMapPageTitleIds(base);
+        stats.forEach(entry -> {
+            if (entry.getPageTitle() != null) {
+                try {
+                    m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
+                } catch (Exception e) {
+                    System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " TO page title ID map.");
+                }
+            }
+        });
+    }
+
+    // Retrieves Page groups by URL and adds them to a hashmap for their respective AirTable base.
+    private void getURLLinkIds(Base base) throws Exception {
+        @SuppressWarnings("unchecked")
+        Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
+        List<AirTableURLLink> urlLinks = urlLinkTable.select();
+        HashMap<String, String> m = selectMapUrlLinkIds(base);
+        urlLinks.forEach(entry -> {
+            if (entry.getURLlink() != null) {
+                try {
+                    m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
+                } catch (Exception e) {
+                    System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " TO url link ID map.");
+                }
+            }
+        });
+    }
+
+    // Retrieves ML Tags and adds them to a hashmap for their respective AirTable base.
+    private void getMLTagIds(Base base) throws Exception {
+        @SuppressWarnings("unchecked")
+        Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
+        List<AirTableMLTag> tags = tagsTable.select();
+        HashMap<String, String> m = selectMapMLTagIds(base);
+        tags.forEach(entry -> {
+            if (entry.getTag() != null) {
+                try {
+                    m.put(entry.getTag().trim().toUpperCase(), entry.getId());
+                } catch (Exception e) {
+                    System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " TO ML tag ID map.");
+                }
+            }
+        });
+    }
+
+    // Assigns tags to non-processed problems.
     public void autoTag() {
         List<Problem> pList = this.problemRepository.findByAutoTagProcessed("false");
         pList.addAll(this.problemRepository.findByAutoTagProcessed(null));
@@ -357,91 +387,7 @@ public class Main implements CommandLineRunner {
 
     }
 
-    //TODO: add a check for null
-    public String removeQueryAfterHTML(String url) {
-        String[] arrOfStr = url.split("(?<=.html)");
-        return arrOfStr[0];
-    }
-
-    public String returnQueryAfterHTML(String url) {
-        String[] arrOfStr = url.split("(?<=.html)");
-        if (arrOfStr.length == 2) {
-            return arrOfStr[1];
-        }
-        return null;
-    }
-
-    // This function marks problems as processed if applicable.
-    public void completeProcessing() {
-        List<Problem> pList = this.problemRepository.findByProcessed("false");
-        pList.addAll(this.problemRepository.findByProcessed(null));
-        for (Problem problem : pList) {
-            try {
-                if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
-                        && problem.getAirTableSync().equals("true") && (problem.getProcessed() == null || problem.getProcessed().equals("false"))) {
-                    problem.setProcessed("true");
-                    this.problemRepository.save(problem);
-                }
-            } catch (Exception e) {
-                System.out.println("Could not mark completed because:" + e.getMessage() + ": ID:" + problem.getId());
-            }
-        }
-        System.out.println("Finished processing...");
-        exit(0);
-    }
-
-
-    // This function cleans problem comments that have not been cleaned using the cleaning script
-    public void removePersonalInfoProblems() {
-        List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
-        pList.addAll(this.problemRepository.findByPersonalInfoProcessed("false"));
-        for (Problem problem : pList) {
-            try {
-                String details = this.contentService.cleanContent(problem.getProblemDetails());
-                problem.setProblemDetails(details);
-                problem.setPersonalInfoProcessed("true");
-                this.problemRepository.save(problem);
-            } catch (Exception e) {
-                System.out.println("Could not process problem:" + problem.getId() + ":" + problem.getProblemDetails());
-            }
-        }
-        System.out.println("Private info removed...");
-    }
-
-    // This function cleans tasks (Exit Survey) that have not been cleaned using the cleaning script
-    public void removePersonalInfoExitSurvey() {
-        List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
-        tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
-        for (TopTaskSurvey task : tList) {
-            try {
-                if (task.getThemeOther() != null) {
-                    String details = this.contentService.cleanContent(task.getThemeOther());
-                    task.setThemeOther(details);
-                }
-                if (task.getTaskOther() != null) {
-                    String details = this.contentService.cleanContent(task.getTaskOther());
-                    task.setTaskOther(details);
-                }
-                if (task.getTaskImproveComment() != null) {
-                    String details = this.contentService.cleanContent(task.getTaskImproveComment());
-                    task.setTaskImproveComment(details);
-                }
-                if (task.getTaskWhyNotComment() != null) {
-                    String details = this.contentService.cleanContent(task.getTaskWhyNotComment());
-                    task.setTaskWhyNotComment(details);
-                }
-                task.setPersonalInfoProcessed("true");
-                this.topTaskRepository.save(task);
-            } catch (Exception e) {
-                System.out.println("Could not process task: " + task.getId() + " : " + task.getDateTime() + " : " + task.getTaskOther() + " : "
-                        + task.getTaskImproveComment() + " : " + task.getTaskWhyNotComment());
-            }
-        }
-        System.out.println("Private info removed...");
-    }
-
-
-    // This function populates entries to the AirTable base.
+    // Populates entries to the AirTable bases and Tier 2 spreadsheet (inventory).
     public void airTableSpreadsheetSync() {
         // Connect to AirTable bases
         @SuppressWarnings("unchecked")
@@ -630,6 +576,66 @@ public class Main implements CommandLineRunner {
         }
     }
 
+    // Marks problems as processed if applicable.
+    public void completeProcessing() {
+        List<Problem> pList = this.problemRepository.findByProcessed("false");
+        pList.addAll(this.problemRepository.findByProcessed(null));
+        for (Problem problem : pList) {
+            try {
+                if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
+                        && problem.getAirTableSync().equals("true") && (problem.getProcessed() == null || problem.getProcessed().equals("false"))) {
+                    problem.setProcessed("true");
+                    this.problemRepository.save(problem);
+                }
+            } catch (Exception e) {
+                System.out.println("Could not mark completed because:" + e.getMessage() + ": ID:" + problem.getId());
+            }
+        }
+        System.out.println("Finished processing...");
+        exit(0);
+    }
+
+    // Temp solution to combat users entering hyperlinks with href HTML tags
+    public boolean containsHTML(String... comments) {
+        for (String comment : comments) {
+            // System.out.println(comment.trim().replaceAll(" +", " ").length());
+            // System.out.println(html2text(comment).length());
+            // System.out.println(html2text(comment));
+            // System.out.println(comment.trim().replaceAll(" +", " "));
+            // for some reason, html2text subtracts 1 from the length.
+            if (comment != null && (comment.trim().replaceAll(" +", " ").length() != html2text(comment).length())) {
+                System.out.println("Detected HTML, deleting entry belonging to comment: " + comment);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //TODO: add a check for null
+    public String removeQueryAfterHTML(String url) {
+        String[] arrOfStr = url.split("(?<=.html)");
+        return arrOfStr[0];
+    }
+
+    public String returnQueryAfterHTML(String url) {
+        String[] arrOfStr = url.split("(?<=.html)");
+        if (arrOfStr.length == 2) {
+            return arrOfStr[1];
+        }
+        return null;
+    }
+
+    // Test removing personal information from a comment after any changes to cleaning script. (test case)
+    public Boolean testRemovePII() {
+        return containsHTML(
+                "A little easier to look up the Boxes in filling out the T4.  I used Google to find help on the items and that worked well.  It pointed me the CRA help.  The CRA Help was clear for my situation, so this worked well.");
+    }
+
+    public void clean(String sentence) {
+        String sentenceCleaned = this.contentService.cleanContent(sentence);
+    }
+
+    // Sets attributes. Made it into a function to make the code look a bit more readable.
     public void setAirProblemAttributes(AirTableProblemEnhanced airProblem, Problem problem) {
         airProblem.setUniqueID(problem.getId());
         airProblem.setDate(problem.getProblemDate());
@@ -650,59 +656,6 @@ public class Main implements CommandLineRunner {
         airProblem.setId(null);
     }
 
-    // This function grabs Page feedback statistics page IDs and adds them to a
-    // hashmap for their respective AirTable (main or health)
-    private void getPageTitleIds(Base base) throws Exception {
-        @SuppressWarnings("unchecked")
-        Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
-        List<AirTableStat> stats = statsTable.select();
-        HashMap<String, String> m = selectMapPageTitleIds(base);
-        stats.forEach(entry -> {
-            if (entry.getPageTitle() != null) {
-                try {
-                    m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " TO page title ID map.");
-                }
-            }
-        });
-    }
-
-    // This function grabs Page groups by URL and adds them to a hashmap for their
-    // respective AirTable (main or health)
-    private void getURLLinkIds(Base base) throws Exception {
-        @SuppressWarnings("unchecked")
-        Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
-        List<AirTableURLLink> urlLinks = urlLinkTable.select();
-        HashMap<String, String> m = selectMapUrlLinkIds(base);
-        urlLinks.forEach(entry -> {
-            if (entry.getURLlink() != null) {
-                try {
-                    m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " TO url link ID map.");
-                }
-            }
-        });
-    }
-
-    // This function grabs ML Tags and adds them to a hashmap for the main AirTable
-    private void getMLTagIds(Base base) throws Exception {
-        @SuppressWarnings("unchecked")
-        Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
-        List<AirTableMLTag> tags = tagsTable.select();
-        HashMap<String, String> m = selectMapMLTagIds(base);
-        tags.forEach(entry -> {
-            if (entry.getTag() != null) {
-                try {
-                    m.put(entry.getTag().trim().toUpperCase(), entry.getId());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " TO ML tag ID map.");
-                }
-            }
-        });
-    }
-
     // Creates record for new titles
     private void createPageTitleEntry(String title, Base base, String pageTitle) throws Exception {
         @SuppressWarnings("unchecked")
@@ -721,6 +674,48 @@ public class Main implements CommandLineRunner {
         urlLink = urlLinkTable.create(urlLink);
         HashMap<String, String> baseURLMap = selectMapUrlLinkIds(base);
         baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
+    }
+
+    public HashMap<String, String> selectMapPageTitleIds(Base base) {
+        if (base.equals(mainBase))
+            return this.mainPageTitleIds;
+        if (base.equals(healthBase))
+            return this.healthPageTitleIds;
+        if (base.equals(CRA_Base))
+            return this.CRA_PageTitleIds;
+        if (base.equals(travelBase))
+            return this.travelPageTitleIds;
+        if (base.equals(IRCC_Base))
+            return this.IRCC_PageTitleIds;
+        return null;
+    }
+
+    public HashMap<String, String> selectMapUrlLinkIds(Base base) {
+        if (base.equals(mainBase))
+            return this.mainUrlLinkIds;
+        if (base.equals(healthBase))
+            return this.healthUrlLinkIds;
+        if (base.equals(CRA_Base))
+            return this.CRA_UrlLinkIds;
+        if (base.equals(travelBase))
+            return this.travelUrlLinkIds;
+        if (base.equals(IRCC_Base))
+            return this.IRCC_UrlLinkIds;
+        return null;
+    }
+
+    public HashMap<String, String> selectMapMLTagIds(Base base) {
+        if (base.equals(mainBase))
+            return this.mainMlTagIds;
+        if (base.equals(healthBase))
+            return this.healthMlTagIds;
+        if (base.equals(CRA_Base))
+            return this.CRA_MlTagIds;
+        if (base.equals(travelBase))
+            return this.travelMlTagIds;
+        if (base.equals(IRCC_Base))
+            return this.IRCC_MlTagIds;
+        return null;
     }
 
 }
