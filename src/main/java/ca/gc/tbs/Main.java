@@ -170,19 +170,20 @@ public class Main implements CommandLineRunner {
         this.travelBase = airTableKey.base(this.travelAirtableBase);
         this.IRCC_Base = airTableKey.base(this.irccAirtableBase);
 
-        System.out.println("---------------------REMOVE PERSONAL INFO TTS---------------------");
+        System.out.println("---------------------REMOVING PERSONAL INFO FROM TTS---------------------");
         this.removePersonalInfoExitSurvey();
 
-        System.out.println("---------------------REMOVE PERSONAL INFO PROBLEM---------------------");
+        System.out.println("---------------------REMOVING PERSONAL INFO FROM COMMENTS---------------------");
         this.removePersonalInfoProblems();
 
-        System.out.println("---------------------REMOVE JUNK DATA TTS---------------------");
+        System.out.println("---------------------REMOVING JUNK DATA FROM TTS---------------------");
         this.removeJunkDataTTS();
 
-        System.out.println("---------------------IMPORT SPREADSHEETS---------------------");
+        System.out.println("---------------------IMPORTING SPREADSHEETS---------------------");
         this.importTier1();
         this.importTier2();
 
+        System.out.println("---------------------RETRIEVING AIRTABLE VALUES---------------------");
         this.getPageTitleIds(mainBase);
         this.getPageTitleIds(healthBase);
         this.getPageTitleIds(CRA_Base);
@@ -201,7 +202,7 @@ public class Main implements CommandLineRunner {
         this.getURLLinkIds(travelBase);
         this.getURLLinkIds(IRCC_Base);
 
-        System.out.println("---------------------AUTO TAG---------------------");
+        System.out.println("---------------------AUTO TAGGING---------------------");
         this.autoTag();
 
         System.out.println("---------------------AIRTABLE & SPREADSHEET SYNC---------------------");
@@ -657,7 +658,6 @@ public class Main implements CommandLineRunner {
     private void getPageTitleIds(Base base) throws Exception {
         @SuppressWarnings("unchecked")
         Table<AirTableStat> statsTable = base.table(this.airtablePageTitleLookup, AirTableStat.class);
-        System.out.println("Connected to Airtable Stats for base: " + base);
         List<AirTableStat> stats = statsTable.select();
         HashMap<String, String> m = selectMapPageTitleIds(base);
         stats.forEach(entry -> {
@@ -665,7 +665,7 @@ public class Main implements CommandLineRunner {
                 try {
                     m.put(entry.getPageTitle().trim().toUpperCase(), entry.getId());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " in base: " + base.name());
+                    System.out.println(e.getMessage() + " Could not add Page Title ID: " + entry.getPageTitle() + " TO page title ID map.");
                 }
             }
         });
@@ -676,7 +676,6 @@ public class Main implements CommandLineRunner {
     private void getURLLinkIds(Base base) throws Exception {
         @SuppressWarnings("unchecked")
         Table<AirTableURLLink> urlLinkTable = base.table(this.airtableURLLink, AirTableURLLink.class);
-        System.out.println("Connected to Airtable Url Link Table for base: " + base);
         List<AirTableURLLink> urlLinks = urlLinkTable.select();
         HashMap<String, String> m = selectMapUrlLinkIds(base);
         urlLinks.forEach(entry -> {
@@ -684,7 +683,7 @@ public class Main implements CommandLineRunner {
                 try {
                     m.put(entry.getURLlink().trim().toUpperCase(), entry.getId());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " in base: " + base.name());
+                    System.out.println(e.getMessage() + " Could not add URL Link ID: " + entry.getURLlink() + " TO url link ID map.");
                 }
             }
         });
@@ -694,7 +693,6 @@ public class Main implements CommandLineRunner {
     private void getMLTagIds(Base base) throws Exception {
         @SuppressWarnings("unchecked")
         Table<AirTableMLTag> tagsTable = base.table(airtableMLTags, AirTableMLTag.class);
-        System.out.println("Connected to Airtable tags table for base: " + base);
         List<AirTableMLTag> tags = tagsTable.select();
         HashMap<String, String> m = selectMapMLTagIds(base);
         tags.forEach(entry -> {
@@ -702,7 +700,7 @@ public class Main implements CommandLineRunner {
                 try {
                     m.put(entry.getTag().trim().toUpperCase(), entry.getId());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " in base: " + base.name());
+                    System.out.println(e.getMessage() + " Could not add ML Tag ID: " + entry.getTag() + " TO ML tag ID map.");
                 }
             }
         });
