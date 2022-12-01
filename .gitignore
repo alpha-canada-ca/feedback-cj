@@ -415,3 +415,5 @@ Feedback Tool.iml
 src/main/resources/service-account.p12
 .idea/libraries/Maven__org_slf4j_slf4j_api_2_0_4.xml
 .idea/libraries/Maven__org_apache_commons_commons_lang3_3_12_0.xml
+.settings/org.eclipse.jdt.core.prefs
+.project
