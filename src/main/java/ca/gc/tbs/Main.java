@@ -257,7 +257,8 @@ public class Main implements CommandLineRunner {
         try {
             for (final CSVRecord record : records) {
                 try {
-                    tier2Spreadsheet.add(record.get("URL").toLowerCase());
+                    String[] modelBase = {record.get("MODEL"), record.get("BASE").toLowerCase()};
+                    tier1Spreadsheet.put(record.get("URL").toLowerCase(), modelBase);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -267,7 +268,7 @@ public class Main implements CommandLineRunner {
             reader.close();
         }
     }
-
+    
     // Retrieves ALL URLs and imports them to the TIER 2 map.
     public void importTier2() throws Exception {
         final Reader reader = new InputStreamReader(
