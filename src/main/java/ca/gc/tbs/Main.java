@@ -268,7 +268,7 @@ public class Main implements CommandLineRunner {
             reader.close();
         }
     }
-    
+
     // Retrieves ALL URLs and imports them to the TIER 2 map.
     public void importTier2() throws Exception {
         final Reader reader = new InputStreamReader(
@@ -430,10 +430,10 @@ public class Main implements CommandLineRunner {
                     GoogleSheetsAPI.appendURL(problem.getUrl());
                     problem.setAirTableSync("true");
                 }
-                // if tier 2 spreadsheet contains URL, do nothing and set AirTable sync to true
+                // if tier 2 spreadsheet contains URL set AirTable sync to true
                 // TIER 2 entries end here.
                 else if (tier2Spreadsheet.contains(problem.getUrl())) {
-                    System.out.println(i + ": Tier 2 spreadsheet contains url already: " + problem.getUrl());
+                    System.out.println("Processed record : " + i + " (Tier 2), Date: " + problem.getProblemDate());
                     problem.setAirTableSync("true");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
@@ -460,7 +460,7 @@ public class Main implements CommandLineRunner {
                         setAirProblemAttributes(airProblem, problem);
                         problemTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " For Main, Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " (Tier 1), Date: " + airProblem.getDate());
                     }
                     // Check if conditions met to go to health AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
