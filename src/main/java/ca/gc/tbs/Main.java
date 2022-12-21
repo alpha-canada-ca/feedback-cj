@@ -444,7 +444,8 @@ public class Main implements CommandLineRunner {
                     problem.setAirTableSync("true");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                    airProblem.setUTM(UTM_values);
+                    if (!UTM_values.equals("{}"))
+                        airProblem.setUTM(UTM_values);
                     // LAST condition: check if conditions met to go to main AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
 
