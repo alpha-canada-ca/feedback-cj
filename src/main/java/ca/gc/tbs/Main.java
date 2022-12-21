@@ -11,6 +11,8 @@ import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -27,10 +29,12 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
 
@@ -291,6 +295,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
+
     // Retrieves Page feedback statistics page IDs and adds them to a hashmap for their respective AirTable base.
     private void getPageTitleIds(Base base) throws Exception {
         @SuppressWarnings("unchecked")
@@ -356,8 +361,9 @@ public class Main implements CommandLineRunner {
                     if (problem.getLanguage().equalsIgnoreCase("fr")) {
                         lang = "fr";
                     }
+
                     String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
-                    String URL = removeQueryAfterHTML(problem.getUrl()).toLowerCase();
+                    String URL = removeQueryParams(problem.getUrl()).toLowerCase();
 
                     if (tier1Spreadsheet.containsKey(URL)) {
                         model = tier1Spreadsheet.get(URL)[0];
@@ -421,8 +427,9 @@ public class Main implements CommandLineRunner {
                     this.problemRepository.delete(problem);
                     continue;
                 }
-                String UTM_value = returnQueryAfterHTML(problem.getUrl());
-                problem.setUrl(removeQueryAfterHTML(problem.getUrl().toLowerCase()));
+                String UTM_values = extractUtmValues(problem.getUrl()).toString();
+                problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
+
                 // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
                     System.out.println("Processed record : " + i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
@@ -437,7 +444,7 @@ public class Main implements CommandLineRunner {
                     problem.setAirTableSync("true");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                    airProblem.setUTM(UTM_value);
+                    airProblem.setUTM(UTM_values);
                     // LAST condition: check if conditions met to go to main AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
 
@@ -603,17 +610,17 @@ public class Main implements CommandLineRunner {
     }
 
     //TODO: add a check for null
-    public String removeQueryAfterHTML(String url) {
-        String[] arrOfStr = url.split("(?<=.html)");
-        return arrOfStr[0];
+    public Map<String, String> extractUtmValues(String url) throws URISyntaxException {
+        URIBuilder builder = new URIBuilder(url);
+        return builder.getQueryParams()
+                .stream()
+                .filter(x -> x.getName().startsWith("utm_"))
+                .collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
     }
 
-    public String returnQueryAfterHTML(String url) {
-        String[] arrOfStr = url.split("(?<=.html)");
-        if (arrOfStr.length == 2) {
-            return arrOfStr[1];
-        }
-        return null;
+    public String removeQueryParams(String url) throws URISyntaxException {
+        URIBuilder builder = new URIBuilder(url);
+        return builder.removeQuery().build().toString();
     }
 
     // Sets attributes. Made it into a function to make the code look a bit more readable.
