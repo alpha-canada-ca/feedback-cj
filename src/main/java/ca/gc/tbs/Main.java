@@ -430,9 +430,9 @@ public class Main implements CommandLineRunner {
                 String UTM_values = extractUtmValues(problem.getUrl()).toString();
                 problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
 
-                // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
+                // if tier 1x and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
-                    System.out.println("Processed record : " + i + ": url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
+                    System.out.println("Processed record : " + i + " url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
                     tier2Spreadsheet.add(problem.getUrl());
                     GoogleSheetsAPI.appendURL(problem.getUrl());
                     problem.setAirTableSync("true");
@@ -467,7 +467,7 @@ public class Main implements CommandLineRunner {
                         setAirProblemAttributes(airProblem, problem);
                         problemTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " (Tier 1), Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " (Tier 1) - Main base, Date: " + airProblem.getDate());
                     }
                     // Check if conditions met to go to health AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
@@ -490,7 +490,7 @@ public class Main implements CommandLineRunner {
                         setAirProblemAttributes(airProblem, problem);
                         healthTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " For Health, Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " For (Tier 1) - Health, Date: " + airProblem.getDate());
                     }
                     // Check if conditions met to go to CRA AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("cra")) {
@@ -516,7 +516,7 @@ public class Main implements CommandLineRunner {
                         setAirProblemAttributes(airProblem, problem);
                         craTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " For CRA, Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " For (Tier 1) - CRA, Date: " + airProblem.getDate());
                     }
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("travel")) {
                         if (!this.travelUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -539,7 +539,7 @@ public class Main implements CommandLineRunner {
                         }
                         setAirProblemAttributes(airProblem, problem);
                         travelTable.create(airProblem);
-                        System.out.println("Processed record : " + i + " For Travel, Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " For (Tier 1) - Travel, Date: " + airProblem.getDate());
                         problem.setAirTableSync("true");
                     }
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("ircc")) {
@@ -564,7 +564,7 @@ public class Main implements CommandLineRunner {
                         }
                         setAirProblemAttributes(airProblem, problem);
                         irccTable.create(airProblem);
-                        System.out.println("Processed record : " + i + " For IRCC, Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " For (Tier 1) - IRCC, Date: " + airProblem.getDate());
                         problem.setAirTableSync("true");
                     }
                 }
