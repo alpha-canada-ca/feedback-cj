@@ -444,9 +444,6 @@ public class Main implements CommandLineRunner {
                     problem.setAirTableSync("true");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                    if (!UTM_values.equals("{}"))
-                        airProblem.setUTM(UTM_values);
-                    // LAST condition: check if conditions met to go to main AirTable and populate.
                     if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
 
                         if (!this.mainUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
@@ -465,6 +462,8 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
+                        if (!UTM_values.equals("{}"))
+                            airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         problemTable.create(airProblem);
                         problem.setAirTableSync("true");
@@ -488,6 +487,8 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
+                        if (!UTM_values.equals("{}"))
+                            airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         healthTable.create(airProblem);
                         problem.setAirTableSync("true");
@@ -514,6 +515,8 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
+                        if (!UTM_values.equals("{}"))
+                            airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         craTable.create(airProblem);
                         problem.setAirTableSync("true");
@@ -538,6 +541,8 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
+                        if (!UTM_values.equals("{}"))
+                            airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         travelTable.create(airProblem);
                         System.out.println("Processed record : " + i + " For (Tier 1) - Travel, Date: " + airProblem.getDate());
@@ -563,6 +568,8 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
+                        if (!UTM_values.equals("{}"))
+                            airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         irccTable.create(airProblem);
                         System.out.println("Processed record : " + i + " For (Tier 1) - IRCC, Date: " + airProblem.getDate());
