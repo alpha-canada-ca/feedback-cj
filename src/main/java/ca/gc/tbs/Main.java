@@ -393,17 +393,13 @@ public class Main implements CommandLineRunner {
     }
 
     // Populates entries to the AirTable bases and Tier 2 spreadsheet (inventory).
+    @SuppressWarnings("unchecked")
     public void airTableSpreadsheetSync() {
         // Connect to AirTable bases
-        @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> problemTable = mainBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-        @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> healthTable = healthBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-        @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> craTable = CRA_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-        @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> travelTable = travelBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
-        @SuppressWarnings("unchecked")
         Table<AirTableProblemEnhanced> irccTable = IRCC_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
         // Find problems that have not been run through this function
         List<Problem> pList = this.problemRepository.findByAirTableSync(null);
@@ -414,44 +410,37 @@ public class Main implements CommandLineRunner {
         int maxToSync = 150;
         for (Problem problem : pList) {
             try {
-
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
-                boolean emptyComment = problem.getProblemDetails().trim().equals("");
-
-                if (emptyComment) {
+                boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/");
+                if (junkComment) {
                     System.out.println("Empty comment, deleting entry...");
                     problemRepository.delete(problem);
                     continue;
                 }
-                if (containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/")) {
-                    this.problemRepository.delete(problem);
-                    continue;
-                }
                 String UTM_values = extractUtmValues(problem.getUrl()).toString();
                 problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
-
-                // if tier 1x and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
+                // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
-                    System.out.println("Processed record : " + i + " url not in spreadsheet " + problem.getUrl() + ", Adding url to Tier 2 Spreadsheet.");
                     tier2Spreadsheet.add(problem.getUrl());
                     GoogleSheetsAPI.appendURL(problem.getUrl());
                     problem.setAirTableSync("true");
+                    System.out.println("Processed record : " + i + " url not in spreadsheet " + problem.getUrl() + ", Added url to Tier 2 Spreadsheet.");
                 }
-                // if tier 2 spreadsheet contains URL set AirTable sync to true
-                // TIER 2 entries end here.
+                // if tier 2 spreadsheet contains URL set AirTable sync to true // TIER 2 entries end here.
                 else if (tier2Spreadsheet.contains(problem.getUrl())) {
-                    System.out.println("Processed record : " + i + " (Tier 2), Date: " + problem.getProblemDate());
                     problem.setAirTableSync("true");
+                    System.out.println("Processed record : " + i + " (Tier 2), Date: " + problem.getProblemDate());
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
-                    if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("main")) {
+                    String base = tier1Spreadsheet.get(problem.getUrl())[1];
+                    if (problemIsProcessed) {
 
                         if (!this.mainUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), mainBase, airtableURLLink);
+                            this.createUrlLinkEntry(problem.getUrl(), selectBase(base), airtableURLLink);
                         }
                         airProblem.getURLLinkIds().add(this.mainUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
                         if (!this.mainPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), mainBase, airtablePageTitleLookup);
+                            this.createPageTitleEntry(problem.getTitle(), selectBase(base), airtablePageTitleLookup);
                         }
                         airProblem.getPageTitleIds().add(this.mainPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
 
@@ -670,6 +659,26 @@ public class Main implements CommandLineRunner {
         urlLink = urlLinkTable.create(urlLink);
         HashMap<String, String> baseURLMap = selectMapUrlLinkIds(base);
         baseURLMap.put(url.trim().toUpperCase(), urlLink.getId());
+    }
+
+
+    public Base selectBase(String base) {
+        if (base.toLowerCase().equals("main")) {
+            return mainBase;
+        }
+        if (base.toLowerCase().equals("health")) {
+            return healthBase;
+        }
+        if (base.toLowerCase().equals("cra")) {
+            return CRA_Base;
+        }
+        if (base.toLowerCase().equals("ircc")) {
+            return IRCC_Base;
+        }
+        if (base.toLowerCase().equals("travel")) {
+            return travelBase;
+        }
+        return null;
     }
 
     public HashMap<String, String> selectMapPageTitleIds(Base base) {
