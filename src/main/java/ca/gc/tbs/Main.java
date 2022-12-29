@@ -437,39 +437,37 @@ public class Main implements CommandLineRunner {
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
                     String base = tier1Spreadsheet.get(problem.getUrl())[1];
-                    if (problemIsProcessed) {
 
-                        if (!selectMapUrlLinkIds(selectBase(base)).containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), selectBase(base), airtableURLLink);
-                        }
-                        airProblem.getURLLinkIds().add(selectMapUrlLinkIds(selectBase(base)).get(problem.getUrl().trim().toUpperCase()));
-                        if (!selectMapPageTitleIds(selectBase(base)).containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), selectBase(base), airtablePageTitleLookup);
-                        }
-                        airProblem.getPageTitleIds().add(selectMapPageTitleIds(selectBase(base)).get(problem.getTitle().trim().toUpperCase()));
-
-                        for (String tag : problem.getTags()) {
-                            if (selectMapMLTagIds(selectBase(base)).containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(selectMapMLTagIds(selectBase(base)).get(tag.trim().toUpperCase()));
-                            } else {
-                                System.out.println("Missing tag id for:" + tag);
-                            }
-                        }
-                        airProblem.setUTM(UTM_values);
-                        setAirProblemAttributes(airProblem, problem);
-                        if (base.toLowerCase().equals("main"))
-                            problemTable.create(airProblem);
-                        if (base.toLowerCase().equals("ircc"))
-                            irccTable.create(airProblem);
-                        if (base.toLowerCase().equals("travel"))
-                            travelTable.create(airProblem);
-                        if (base.toLowerCase().equals("cra"))
-                            craTable.create(airProblem);
-                        if (base.toLowerCase().equals("health"))
-                            healthTable.create(airProblem);
-                        problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
+                    if (!selectMapUrlLinkIds(selectBase(base)).containsKey(problem.getUrl().trim().toUpperCase())) {
+                        this.createUrlLinkEntry(problem.getUrl(), selectBase(base), airtableURLLink);
                     }
+                    airProblem.getURLLinkIds().add(selectMapUrlLinkIds(selectBase(base)).get(problem.getUrl().trim().toUpperCase()));
+                    if (!selectMapPageTitleIds(selectBase(base)).containsKey(problem.getTitle().trim().toUpperCase())) {
+                        this.createPageTitleEntry(problem.getTitle(), selectBase(base), airtablePageTitleLookup);
+                    }
+                    airProblem.getPageTitleIds().add(selectMapPageTitleIds(selectBase(base)).get(problem.getTitle().trim().toUpperCase()));
+
+                    for (String tag : problem.getTags()) {
+                        if (selectMapMLTagIds(selectBase(base)).containsKey(tag.trim().toUpperCase())) {
+                            airProblem.getTags().add(selectMapMLTagIds(selectBase(base)).get(tag.trim().toUpperCase()));
+                        } else {
+                            System.out.println("Missing tag id for:" + tag);
+                        }
+                    }
+                    airProblem.setUTM(UTM_values);
+                    setAirProblemAttributes(airProblem, problem);
+                    if (base.toLowerCase().equals("main"))
+                        problemTable.create(airProblem);
+                    if (base.toLowerCase().equals("ircc"))
+                        irccTable.create(airProblem);
+                    if (base.toLowerCase().equals("travel"))
+                        travelTable.create(airProblem);
+                    if (base.toLowerCase().equals("cra"))
+                        craTable.create(airProblem);
+                    if (base.toLowerCase().equals("health"))
+                        healthTable.create(airProblem);
+                    problem.setAirTableSync("true");
+                    System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
                 }
                 i++;
                 this.problemRepository.save(problem);
