@@ -11,7 +11,6 @@ import com.sybit.airtable.Table;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -466,7 +465,7 @@ public class Main implements CommandLineRunner {
                         if (base.toLowerCase().equals("health"))
                             healthTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " (Tier 1) for base:" + base + " Date: " + airProblem.getDate());
+                        System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
                     }
                 }
                 if (i >= maxToSync) {
@@ -516,7 +515,8 @@ public class Main implements CommandLineRunner {
         return builder.getQueryParams()
                 .stream()
                 .filter(x -> x.getName().startsWith("utm_"))
-                .collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue)).toString();
+                .map(x -> x.getName() + "=" + x.getValue())
+                .collect(Collectors.joining("&"));
     }
 
     public String removeQueryParams(String url) throws URISyntaxException {
