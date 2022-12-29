@@ -451,8 +451,7 @@ public class Main implements CommandLineRunner {
                                 System.out.println("Missing tag id for:" + tag);
                             }
                         }
-                        if (!UTM_values.equals("{}"))
-                            airProblem.setUTM(UTM_values);
+                        airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
                         if (base.toLowerCase().equals("main"))
                             problemTable.create(airProblem);
