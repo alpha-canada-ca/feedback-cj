@@ -511,12 +511,12 @@ public class Main implements CommandLineRunner {
     }
 
     //TODO: add a check for null
-    public Map<String, String> extractUtmValues(String url) throws URISyntaxException {
+    public String extractUtmValues(String url) throws URISyntaxException {
         URIBuilder builder = new URIBuilder(url);
         return builder.getQueryParams()
                 .stream()
                 .filter(x -> x.getName().startsWith("utm_"))
-                .collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
+                .collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue)).toString();
     }
 
     public String removeQueryParams(String url) throws URISyntaxException {
