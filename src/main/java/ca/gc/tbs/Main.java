@@ -409,6 +409,10 @@ public class Main implements CommandLineRunner {
         int maxToSync = 150;
         for (Problem problem : pList) {
             try {
+                if (i >= maxToSync) {
+                    System.out.println("Sync only " + maxToSync + " records at a time...");
+                    break;
+                }
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
                 boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/");
                 if (junkComment) {
@@ -467,16 +471,10 @@ public class Main implements CommandLineRunner {
                         System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
                     }
                 }
-                if (i >= maxToSync) {
-                    System.out.println("Sync only " + maxToSync + " records at a time...");
-                    break;
-                }
                 i++;
                 this.problemRepository.save(problem);
             } catch (Exception e) {
-
                 System.out.println(e.getMessage() + " Could not sync record : " + problem.getId() + " URL:" + problem.getUrl());
-
             }
         }
     }
