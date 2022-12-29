@@ -419,6 +419,7 @@ public class Main implements CommandLineRunner {
                 }
                 String UTM_values = extractUtmValues(problem.getUrl()).toString();
                 problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
+
                 // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
                     tier2Spreadsheet.add(problem.getUrl());
@@ -435,18 +436,18 @@ public class Main implements CommandLineRunner {
                     String base = tier1Spreadsheet.get(problem.getUrl())[1];
                     if (problemIsProcessed) {
 
-                        if (!this.mainUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
+                        if (!selectMapUrlLinkIds(selectBase(base)).containsKey(problem.getUrl().trim().toUpperCase())) {
                             this.createUrlLinkEntry(problem.getUrl(), selectBase(base), airtableURLLink);
                         }
-                        airProblem.getURLLinkIds().add(this.mainUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-                        if (!this.mainPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
+                        airProblem.getURLLinkIds().add(selectMapUrlLinkIds(selectBase(base)).get(problem.getUrl().trim().toUpperCase()));
+                        if (!selectMapPageTitleIds(selectBase(base)).containsKey(problem.getTitle().trim().toUpperCase())) {
                             this.createPageTitleEntry(problem.getTitle(), selectBase(base), airtablePageTitleLookup);
                         }
-                        airProblem.getPageTitleIds().add(this.mainPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
+                        airProblem.getPageTitleIds().add(selectMapPageTitleIds(selectBase(base)).get(problem.getTitle().trim().toUpperCase()));
 
                         for (String tag : problem.getTags()) {
-                            if (this.mainMlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.mainMlTagIds.get(tag.trim().toUpperCase()));
+                            if (selectMapMLTagIds(selectBase(base)).containsKey(tag.trim().toUpperCase())) {
+                                airProblem.getTags().add(selectMapMLTagIds(selectBase(base)).get(tag.trim().toUpperCase()));
                             } else {
                                 System.out.println("Missing tag id for:" + tag);
                             }
@@ -454,115 +455,18 @@ public class Main implements CommandLineRunner {
                         if (!UTM_values.equals("{}"))
                             airProblem.setUTM(UTM_values);
                         setAirProblemAttributes(airProblem, problem);
-                        problemTable.create(airProblem);
+                        if (base.toLowerCase().equals("main"))
+                            problemTable.create(airProblem);
+                        if (base.toLowerCase().equals("ircc"))
+                            irccTable.create(airProblem);
+                        if (base.toLowerCase().equals("travel"))
+                            travelTable.create(airProblem);
+                        if (base.toLowerCase().equals("cra"))
+                            craTable.create(airProblem);
+                        if (base.toLowerCase().equals("health"))
+                            healthTable.create(airProblem);
                         problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " (Tier 1) - Main base, Date: " + airProblem.getDate());
-                    }
-                    // Check if conditions met to go to health AirTable and populate.
-                    if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("health")) {
-                        if (!this.healthUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), healthBase, airtableURLLink);
-                        }
-                        airProblem.getURLLinkIds().add(this.healthUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-                        if (!this.healthPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), healthBase, airtablePageTitleLookup);
-                        }
-                        airProblem.getPageTitleIds().add(this.healthPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-
-                        for (String tag : problem.getTags()) {
-                            if (this.healthMlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.healthMlTagIds.get(tag.trim().toUpperCase()));
-                            } else {
-                                System.out.println("Missing tag id for:" + tag);
-                            }
-                        }
-                        if (!UTM_values.equals("{}"))
-                            airProblem.setUTM(UTM_values);
-                        setAirProblemAttributes(airProblem, problem);
-                        healthTable.create(airProblem);
-                        problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " For (Tier 1) - Health, Date: " + airProblem.getDate());
-                    }
-                    // Check if conditions met to go to CRA AirTable and populate.
-                    if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("cra")) {
-
-                        if (!this.CRA_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), CRA_Base, airtableURLLink);
-                        }
-
-                        airProblem.getURLLinkIds().add(this.CRA_UrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-
-                        if (!this.CRA_PageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), CRA_Base, airtablePageTitleLookup);
-                        }
-                        airProblem.getPageTitleIds().add(this.CRA_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-
-                        for (String tag : problem.getTags()) {
-                            if (this.CRA_MlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.CRA_MlTagIds.get(tag.trim().toUpperCase()));
-                            } else {
-                                System.out.println("Missing tag id for:" + tag);
-                            }
-                        }
-                        if (!UTM_values.equals("{}"))
-                            airProblem.setUTM(UTM_values);
-                        setAirProblemAttributes(airProblem, problem);
-                        craTable.create(airProblem);
-                        problem.setAirTableSync("true");
-                        System.out.println("Processed record : " + i + " For (Tier 1) - CRA, Date: " + airProblem.getDate());
-                    }
-                    if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("travel")) {
-                        if (!this.travelUrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), travelBase, airtableURLLink);
-                        }
-
-                        airProblem.getURLLinkIds().add(this.travelUrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-
-                        if (!this.travelPageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), travelBase, airtablePageTitleLookup);
-                        }
-                        airProblem.getPageTitleIds().add(this.travelPageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-
-                        for (String tag : problem.getTags()) {
-                            if (this.travelMlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.travelMlTagIds.get(tag.trim().toUpperCase()));
-                            } else {
-                                System.out.println("Missing tag id for:" + tag);
-                            }
-                        }
-                        if (!UTM_values.equals("{}"))
-                            airProblem.setUTM(UTM_values);
-                        setAirProblemAttributes(airProblem, problem);
-                        travelTable.create(airProblem);
-                        System.out.println("Processed record : " + i + " For (Tier 1) - Travel, Date: " + airProblem.getDate());
-                        problem.setAirTableSync("true");
-                    }
-                    if (problemIsProcessed && tier1Spreadsheet.get(problem.getUrl())[1].equals("ircc")) {
-
-                        if (!this.IRCC_UrlLinkIds.containsKey(problem.getUrl().trim().toUpperCase())) {
-                            this.createUrlLinkEntry(problem.getUrl(), IRCC_Base, airtableURLLink);
-                        }
-
-                        airProblem.getURLLinkIds().add(this.IRCC_UrlLinkIds.get(problem.getUrl().trim().toUpperCase()));
-
-                        if (!this.IRCC_PageTitleIds.containsKey(problem.getTitle().trim().toUpperCase())) {
-                            this.createPageTitleEntry(problem.getTitle(), IRCC_Base, airtablePageTitleLookup);
-                        }
-                        airProblem.getPageTitleIds().add(this.IRCC_PageTitleIds.get(problem.getTitle().trim().toUpperCase()));
-
-                        for (String tag : problem.getTags()) {
-                            if (this.IRCC_MlTagIds.containsKey(tag.trim().toUpperCase())) {
-                                airProblem.getTags().add(this.IRCC_MlTagIds.get(tag.trim().toUpperCase()));
-                            } else {
-                                System.out.println("Missing tag id for:" + tag);
-                            }
-                        }
-                        if (!UTM_values.equals("{}"))
-                            airProblem.setUTM(UTM_values);
-                        setAirProblemAttributes(airProblem, problem);
-                        irccTable.create(airProblem);
-                        System.out.println("Processed record : " + i + " For (Tier 1) - IRCC, Date: " + airProblem.getDate());
-                        problem.setAirTableSync("true");
+                        System.out.println("Processed record : " + i + " (Tier 1) for base:" + base + " Date: " + airProblem.getDate());
                     }
                 }
                 if (i >= maxToSync) {
