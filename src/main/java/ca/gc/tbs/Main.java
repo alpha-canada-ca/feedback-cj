@@ -456,16 +456,25 @@ public class Main implements CommandLineRunner {
                     }
                     airProblem.setUTM(UTM_values);
                     setAirProblemAttributes(airProblem, problem);
-                    if (base.toLowerCase().equals("main"))
-                        problemTable.create(airProblem);
-                    if (base.toLowerCase().equals("ircc"))
-                        irccTable.create(airProblem);
-                    if (base.toLowerCase().equals("travel"))
-                        travelTable.create(airProblem);
-                    if (base.toLowerCase().equals("cra"))
-                        craTable.create(airProblem);
-                    if (base.toLowerCase().equals("health"))
-                        healthTable.create(airProblem);
+
+                    switch (base.toLowerCase()) {
+                        case "main":
+                            problemTable.create(airProblem);
+                            break;
+                        case "ircc":
+                            irccTable.create(airProblem);
+                            break;
+                        case "travel":
+                            travelTable.create(airProblem);
+                            break;
+                        case "cra":
+                            craTable.create(airProblem);
+                            break;
+                        case "health":
+                            healthTable.create(airProblem);
+                            break;
+                    }
+
                     problem.setAirTableSync("true");
                     System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
                 }
