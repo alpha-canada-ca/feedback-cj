@@ -32,6 +32,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -403,8 +405,9 @@ public class Main implements CommandLineRunner {
         // Find problems that have not been run through this function
         List<Problem> pList = this.problemRepository.findByAirTableSync(null);
         pList.addAll(this.problemRepository.findByAirTableSync("false"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         System.out.println("Connected to MongoDB & Airtable");
-        System.out.println("Found " + pList.size() + " records that need to be added.");
+        System.out.println("Found " + pList.size() + " records to be processed on Date: " + LocalDate.now().format(formatter));
         int i = 1;
         int maxToSync = 150;
         for (Problem problem : pList) {
@@ -433,7 +436,7 @@ public class Main implements CommandLineRunner {
                 // if tier 2 spreadsheet contains URL set AirTable sync to true // TIER 2 entries end here.
                 else if (tier2Spreadsheet.contains(problem.getUrl())) {
                     problem.setAirTableSync("true");
-                    System.out.println("Processed record : " + i + " (Tier 2), Date: " + problem.getProblemDate());
+                    System.out.println("Processed record : " + i + " (Tier 2)");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
                     String base = tier1Spreadsheet.get(problem.getUrl())[1];
@@ -476,7 +479,7 @@ public class Main implements CommandLineRunner {
                             break;
                     }
                     problem.setAirTableSync("true");
-                    System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
+                    System.out.println("Processed record : " + i + " (Tier 1) Base: " + base.toUpperCase());
                 }
                 i++;
                 this.problemRepository.save(problem);
