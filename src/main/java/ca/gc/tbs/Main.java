@@ -249,7 +249,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // Retrieves ALL model & bases and imports them to the TIER 1 map.
+    // Retrieves ALL model & bases from spreadsheet and imports them to the TIER 1 map.
     public void importTier1() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1eOmX_b8XCR9eLNxUbX3Gwkp2ywJ-vhapnC7ApdRbnSg/export?format=csv").openConnection()
@@ -272,7 +272,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // Retrieves ALL URLs and imports them to the TIER 2 map.
+    // Retrieves ALL URLs from spreadsheet and imports them to the TIER 2 map.
     public void importTier2() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
@@ -442,6 +442,7 @@ public class Main implements CommandLineRunner {
                         this.createUrlLinkEntry(problem.getUrl(), selectBase(base), airtableURLLink);
                     }
                     airProblem.getURLLinkIds().add(selectMapUrlLinkIds(selectBase(base)).get(problem.getUrl().trim().toUpperCase()));
+
                     if (!selectMapPageTitleIds(selectBase(base)).containsKey(problem.getTitle().trim().toUpperCase())) {
                         this.createPageTitleEntry(problem.getTitle(), selectBase(base), airtablePageTitleLookup);
                     }
@@ -474,7 +475,6 @@ public class Main implements CommandLineRunner {
                             healthTable.create(airProblem);
                             break;
                     }
-
                     problem.setAirTableSync("true");
                     System.out.println("Processed record : " + i + " (Tier 1) for Base: " + base.toUpperCase() + " Date: " + airProblem.getDate());
                 }
