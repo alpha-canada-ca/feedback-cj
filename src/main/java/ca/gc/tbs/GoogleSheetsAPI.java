@@ -20,7 +20,7 @@ import java.util.Collections;
 public class GoogleSheetsAPI {
 
     static final String spreadsheetId = "1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg";
-    static final String range = "A1:A2000";
+    static final String range = "A1:A5000";
     private static final String APPLICATION_NAME = "My Google Sheets Application";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String SERVICE_ACCOUNT_EMAIL = "cronjob@feedback-cj.iam.gserviceaccount.com";
