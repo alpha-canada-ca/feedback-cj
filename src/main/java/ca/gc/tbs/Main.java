@@ -423,7 +423,7 @@ public class Main implements CommandLineRunner {
                     problemRepository.delete(problem);
                     continue;
                 }
-                String UTM_values = extractUtmValues(problem.getUrl()).toString();
+                String UTM_values = extractUtmValues(problem.getUrl());
                 problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
 
                 // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
@@ -574,19 +574,19 @@ public class Main implements CommandLineRunner {
 
 
     public Base selectBase(String base) {
-        if (base.toLowerCase().equals("main")) {
+        if (base.equalsIgnoreCase("main")) {
             return mainBase;
         }
-        if (base.toLowerCase().equals("health")) {
+        if (base.equalsIgnoreCase("health")) {
             return healthBase;
         }
-        if (base.toLowerCase().equals("cra")) {
+        if (base.equalsIgnoreCase("cra")) {
             return CRA_Base;
         }
-        if (base.toLowerCase().equals("ircc")) {
+        if (base.equalsIgnoreCase("ircc")) {
             return IRCC_Base;
         }
-        if (base.toLowerCase().equals("travel")) {
+        if (base.equalsIgnoreCase("travel")) {
             return travelBase;
         }
         return null;
