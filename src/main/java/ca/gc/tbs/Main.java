@@ -28,6 +28,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -417,7 +418,8 @@ public class Main implements CommandLineRunner {
                     break;
                 }
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
-                boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails()) || problem.getUrl().equals("https://www.canada.ca/") || problem.getProblemDetails().length() > 301;
+                boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails())
+                        || problem.getUrl().equals("https://www.canada.ca/") || problem.getProblemDetails().length() > 301;
                 if (junkComment) {
                     System.out.println("Empty comment, deleting entry...");
                     problemRepository.delete(problem);
@@ -436,7 +438,7 @@ public class Main implements CommandLineRunner {
                 // if tier 2 spreadsheet contains URL set AirTable sync to true // TIER 2 entries end here.
                 else if (tier2Spreadsheet.contains(problem.getUrl())) {
                     problem.setAirTableSync("true");
-                    System.out.println("Processed record : " + i + " (Tier 2)");
+                    System.out.println("Processed record : " + i + " (Tier 2) EXISTS ALREADY");
                 } else {
                     AirTableProblemEnhanced airProblem = new AirTableProblemEnhanced();
                     String base = tier1Spreadsheet.get(problem.getUrl())[1];
@@ -516,8 +518,17 @@ public class Main implements CommandLineRunner {
         return parsedComment.length() != comment.trim().length();
     }
 
-    //TODO: add a check for null
     public String extractUtmValues(String url) throws URISyntaxException {
+        if (url == null) {
+            return "";
+        }
+
+        try {
+            new URL(url).toURI(); // check if the URL is well-formed
+        } catch (MalformedURLException | URISyntaxException e) {
+            return "";
+        }
+
         URIBuilder builder = new URIBuilder(url);
         return builder.getQueryParams()
                 .stream()
@@ -525,6 +536,7 @@ public class Main implements CommandLineRunner {
                 .map(x -> x.getName() + "=" + x.getValue())
                 .collect(Collectors.joining("&"));
     }
+
 
     public String removeQueryParams(String url) throws URISyntaxException {
         URIBuilder builder = new URIBuilder(url);
