@@ -129,7 +129,7 @@ public class Main implements CommandLineRunner {
 
         System.out.println("---------------------REMOVING PERSONAL INFO FROM TTS---------------------");
         this.removePersonalInfoExitSurvey();
-//
+
         System.out.println("---------------------REMOVING PERSONAL INFO FROM COMMENTS---------------------");
         this.removePersonalInfoProblems();
 
