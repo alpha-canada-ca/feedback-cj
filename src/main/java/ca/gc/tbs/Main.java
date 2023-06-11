@@ -454,8 +454,11 @@ public class Main implements CommandLineRunner {
                     airProblem.getPageTitleIds().add(selectMapPageTitleIds(selectBase(base)).get(problem.getTitle().trim().toUpperCase()));
 
                     for (String tag : problem.getTags()) {
-                        if (selectMapMLTagIds(selectBase(base)).containsKey(tag.trim().toUpperCase())) {
-                            airProblem.getTags().add(selectMapMLTagIds(selectBase(base)).get(tag.trim().toUpperCase()));
+                        String trimmedTag = tag.trim().toUpperCase();
+                        if (trimmedTag.isEmpty()) {
+                            System.out.println("Empty tag encountered.");
+                        } else if (selectMapMLTagIds(selectBase(base)).containsKey(trimmedTag)) {
+                            airProblem.getTags().add(selectMapMLTagIds(selectBase(base)).get(trimmedTag));
                         } else {
                             System.out.println("Missing tag id for:" + tag);
                         }
@@ -538,9 +541,15 @@ public class Main implements CommandLineRunner {
     }
 
 
+
     public String removeQueryParams(String url) throws URISyntaxException {
-        URIBuilder builder = new URIBuilder(url);
-        return builder.removeQuery().build().toString();
+        try {
+            URIBuilder builder = new URIBuilder(url);
+            return builder.removeQuery().build().toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return url; // Return the original URL if there's an exception
+        }
     }
 
     // Sets attributes. Made it into a function to make the code look a bit more readable.
