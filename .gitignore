@@ -420,3 +420,5 @@ src/main/resources/service-account.p12
 .settings/org.eclipse.jdt.core.prefs
 .settings/org.eclipse.jdt.apt.core.prefs
 .classpath
+.classpath
+.project
