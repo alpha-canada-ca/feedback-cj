@@ -1,4 +1,4 @@
-FROM maven:3.8.1-openjdk-11
+FROM maven:3.8.1-openjdk-8
 RUN apt-get clean
 RUN apt-get update
 RUN mkdir -p /app
