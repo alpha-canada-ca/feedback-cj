@@ -494,7 +494,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // Marks problems as processed if applicable.
+    // Marks problems as processed if applicable
     public void completeProcessing() {
         List<Problem> pList = this.problemRepository.findByProcessed("false");
         pList.addAll(this.problemRepository.findByProcessed(null));
