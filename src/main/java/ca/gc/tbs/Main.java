@@ -275,7 +275,7 @@ public class Main implements CommandLineRunner {
         }
     }
 
-    // Retrieves ALL URLs from spreadsheet and imports them to the TIER 2 map.
+    // Retrieves ALL URLs from spreadsheet and imports them to the TIER 2 map
     public void importTier2() throws Exception {
         final Reader reader = new InputStreamReader(
                 new URL("https://docs.google.com/spreadsheets/d/1B16qEbfp7SFCfIsZ8fcj7DneCy1WkR0GPh4t9L9NRSg/export?format=csv").openConnection()
@@ -539,7 +539,6 @@ public class Main implements CommandLineRunner {
                 .map(x -> x.getName() + "=" + x.getValue())
                 .collect(Collectors.joining("&"));
     }
-
 
 
     public String removeQueryParams(String url) throws URISyntaxException {
