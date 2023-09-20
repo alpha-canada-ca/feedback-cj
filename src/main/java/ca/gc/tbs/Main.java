@@ -173,6 +173,7 @@ public class Main implements CommandLineRunner {
     public void removePersonalInfoExitSurvey() {
         List<TopTaskSurvey> tList = this.topTaskRepository.findByPersonalInfoProcessed(null);
         tList.addAll(this.topTaskRepository.findByPersonalInfoProcessed("false"));
+        System.out.println("Number of tasks to clean: " + tList.size());
         for (TopTaskSurvey task : tList) {
             try {
                 if (task.getThemeOther() != null) {
@@ -205,6 +206,7 @@ public class Main implements CommandLineRunner {
     public void removePersonalInfoProblems() {
         List<Problem> pList = this.problemRepository.findByPersonalInfoProcessed(null);
         pList.addAll(this.problemRepository.findByPersonalInfoProcessed("false"));
+        System.out.println("Number of Problems to clean: " + pList.size());
         for (Problem problem : pList) {
             try {
                 String details = this.contentService.cleanContent(problem.getProblemDetails());
