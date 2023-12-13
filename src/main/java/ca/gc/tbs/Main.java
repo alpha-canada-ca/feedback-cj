@@ -367,7 +367,7 @@ public class Main implements CommandLineRunner {
                     }
 
                     String text = URLEncoder.encode(problem.getProblemDetails(), StandardCharsets.UTF_8.name());
-                    String URL = removeQueryParams(problem.getUrl()).toLowerCase();
+                    String URL = removeQueryAndFragment(problem.getUrl()).toLowerCase();
 
                     if (tier1Spreadsheet.containsKey(URL)) {
                         model = tier1Spreadsheet.get(URL)[0];
@@ -428,7 +428,7 @@ public class Main implements CommandLineRunner {
                     continue;
                 }
                 String UTM_values = extractUtmValues(problem.getUrl());
-                problem.setUrl(removeQueryParams(problem.getUrl().toLowerCase()));
+                problem.setUrl(removeQueryAndFragment(problem.getUrl().toLowerCase()));
 
                 // if tier 1 and tier 2 spreadsheet don't contain URL, add it to Tier 2 and set sync to true
                 if (!tier1Spreadsheet.containsKey(problem.getUrl()) && !tier2Spreadsheet.contains(problem.getUrl())) {
@@ -543,15 +543,19 @@ public class Main implements CommandLineRunner {
     }
 
 
-    public String removeQueryParams(String url) throws URISyntaxException {
+    public String removeQueryAndFragment(String url) {
         try {
             URIBuilder builder = new URIBuilder(url);
-            return builder.removeQuery().build().toString();
+            // Remove query and fragment
+            builder.clearParameters();
+            builder.setFragment(null);
+            return builder.build().toString();
         } catch (Exception e) {
             e.printStackTrace();
             return url; // Return the original URL if there's an exception
         }
     }
+
 
     // Sets attributes. Made it into a function to make the code look a bit more readable.
     public void setAirProblemAttributes(AirTableProblemEnhanced airProblem, Problem problem) {
