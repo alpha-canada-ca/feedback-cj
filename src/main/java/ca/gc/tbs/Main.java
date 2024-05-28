@@ -504,6 +504,7 @@ public class Main implements CommandLineRunner {
             try {
                 if (problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true")
                         && problem.getAirTableSync().equals("true") && (problem.getProcessed() == null || problem.getProcessed().equals("false"))) {
+                    problem.setProcessedDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                     problem.setProcessed("true");
                     this.problemRepository.save(problem);
                 }
@@ -564,7 +565,6 @@ public class Main implements CommandLineRunner {
         airProblem.setTimeStamp(problem.getTimeStamp());
         airProblem.setURL(problem.getUrl());
         airProblem.setLang(problem.getLanguage().toUpperCase());
-        airProblem.setWhatswrong(problem.getProblem());
         airProblem.setComment(problem.getProblemDetails());
         airProblem.setIgnore(null);
         airProblem.setTagsConfirmed(null);
