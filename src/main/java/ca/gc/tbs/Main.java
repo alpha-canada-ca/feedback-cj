@@ -250,6 +250,7 @@ public class Main implements CommandLineRunner {
                 task.setTaskWhyNotComment("");
             }
             task.setProcessed("true");
+            task.setProcessedDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             this.topTaskRepository.save(task);
         }
     }
