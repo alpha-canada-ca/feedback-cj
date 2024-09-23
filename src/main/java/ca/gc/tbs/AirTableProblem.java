@@ -5,8 +5,7 @@ public class AirTableProblem {
 	private String id;
 	
 	@SerializedName("Unique ID")
-	private String uniqueID;
-	 
+	private String uniqueID; 
 	@SerializedName("Date")
 	private String date;
 	@SerializedName("Time received")
