@@ -26,8 +26,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -397,6 +396,21 @@ public class Main implements CommandLineRunner {
 
     }
 
+    private void writeDuplicateToFile(String comment, String url, String date) {
+        try {
+            File file = new File("duplicate_comments.txt");
+            FileWriter fw = new FileWriter(file, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write("Date: " + date + "\n");
+            bw.write("URL: " + url + "\n");
+            bw.write("Comment: " + comment + "\n");
+            bw.write("----------------------------------------\n");
+            bw.close();
+        } catch (IOException e) {
+            System.out.println("Error writing duplicate to file: " + e.getMessage());
+        }
+    }
+
     // Populates entries to the AirTable bases and Tier 2 spreadsheet (inventory).
     @SuppressWarnings("unchecked")
     public void airTableSpreadsheetSync() {
@@ -425,13 +439,18 @@ public class Main implements CommandLineRunner {
 
                 // Then in the for loop, before processing each problem:
                 String normalizedComment = problem.getProblemDetails().trim().toLowerCase();
+
                 if (seenComments.contains(normalizedComment)) {
                     System.out.println("Skipping duplicate comment: " + problem.getProblemDetails());
+                    writeDuplicateToFile(problem.getProblemDetails(), problem.getUrl(),
+                            problem.getProblemDate() != null ? problem.getProblemDate() : LocalDate.now().format(formatter));
                     problem.setAirTableSync("true"); // Mark as processed
                     problemRepository.save(problem);
                     continue;
                 }
                 seenComments.add(normalizedComment);
+
+
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
                 boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails())
                         || problem.getUrl().equals("https://www.canada.ca/") || problem.getProblemDetails().length() > 301;
