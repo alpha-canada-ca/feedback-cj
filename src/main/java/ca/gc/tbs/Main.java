@@ -407,6 +407,7 @@ public class Main implements CommandLineRunner {
         Table<AirTableProblemEnhanced> travelTable = travelBase.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
         Table<AirTableProblemEnhanced> irccTable = IRCC_Base.table(this.problemAirtableTab, AirTableProblemEnhanced.class);
         // Find problems that have not been run through this function
+        Set<String> seenComments = new HashSet<>();
         List<Problem> pList = this.problemRepository.findByAirTableSync(null);
         pList.addAll(this.problemRepository.findByAirTableSync("false"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -420,6 +421,17 @@ public class Main implements CommandLineRunner {
                     System.out.println("Sync only " + maxToSync + " records at a time...");
                     break;
                 }
+                // In airTableSpreadsheetSync(), right after getting the pList:
+
+                // Then in the for loop, before processing each problem:
+                String normalizedComment = problem.getProblemDetails().trim().toLowerCase();
+                if (seenComments.contains(normalizedComment)) {
+                    System.out.println("Skipping duplicate comment: " + problem.getProblemDetails());
+                    problem.setAirTableSync("true"); // Mark as processed
+                    problemRepository.save(problem);
+                    continue;
+                }
+                seenComments.add(normalizedComment);
                 boolean problemIsProcessed = problem.getPersonalInfoProcessed().equals("true") && problem.getAutoTagProcessed().equals("true");
                 boolean junkComment = problem.getProblemDetails().trim().equals("") || containsHTML(problem.getProblemDetails())
                         || problem.getUrl().equals("https://www.canada.ca/") || problem.getProblemDetails().length() > 301;
