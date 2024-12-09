@@ -396,12 +396,13 @@ public class Main implements CommandLineRunner {
 
     }
 
-    private void writeDuplicateToFile(String comment, String url, String date) {
+    private void writeDuplicateToFile(String comment, String url, String date, String timeStamp) {
         try {
             File file = new File("duplicate_comments.txt");
             FileWriter fw = new FileWriter(file, true);
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write("Date: " + date + "\n");
+            bw.write("Time (UTC): " + timeStamp + "\n");
             bw.write("URL: " + url + "\n");
             bw.write("Comment: " + comment + "\n");
             bw.write("----------------------------------------\n");
@@ -443,7 +444,7 @@ public class Main implements CommandLineRunner {
                 if (seenComments.contains(normalizedComment)) {
                     System.out.println("Skipping duplicate comment: " + problem.getProblemDetails());
                     writeDuplicateToFile(problem.getProblemDetails(), problem.getUrl(),
-                            problem.getProblemDate() != null ? problem.getProblemDate() : LocalDate.now().format(formatter));
+                            problem.getProblemDate() != null ? problem.getProblemDate() : LocalDate.now().format(formatter), problem.getTimeStamp());
                     problem.setAirTableSync("true"); // Mark as processed
                     problemRepository.save(problem);
                     continue;
