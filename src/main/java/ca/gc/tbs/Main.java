@@ -26,7 +26,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.io.*;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -398,19 +399,13 @@ public class Main implements CommandLineRunner {
 
     private void writeDuplicateToFile(String comment, String url, String date, String timeStamp) {
         try {
-            File file = new File("duplicate_comments.txt");
-            FileWriter fw = new FileWriter(file, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("Date: " + date + "\n");
-            bw.write("Time (UTC): " + timeStamp + "\n");
-            bw.write("URL: " + url + "\n");
-            bw.write("Comment: " + comment + "\n");
-            bw.write("----------------------------------------\n");
-            bw.close();
-        } catch (IOException e) {
-            System.out.println("Error writing duplicate to file: " + e.getMessage());
+            GoogleSheetsAPI.appendDuplicateComment(date, timeStamp, url, comment);
+        } catch (Exception e) {
+            System.out.println("Error writing duplicate to spreadsheet: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 
     // Populates entries to the AirTable bases and Tier 2 spreadsheet (inventory).
     @SuppressWarnings("unchecked")
