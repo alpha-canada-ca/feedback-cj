@@ -22,9 +22,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.datatables.DataTablesRepositoryFactoryBean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 import static java.lang.System.exit;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"ca.gc.tbs.domain", "ca.gc.tbs.repository"})
+@ComponentScan(basePackages = {"ca.gc.tbs.domain", "ca.gc.tbs.repository", "ca.gc.tbs.service"})
 @EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class Main implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -68,7 +70,8 @@ public class Main implements CommandLineRunner {
     private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
     private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> IRCC_MlTagIds = new HashMap<>();
-    private final ContentService contentService = new ContentService();
+    @Autowired
+    private ContentService contentService;
     @Autowired
     private ProblemRepository problemRepository;
     @Autowired
@@ -108,6 +111,11 @@ public class Main implements CommandLineRunner {
     private Base CRA_Base;
     private Base travelBase;
     private Base IRCC_Base;
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(Main.class).web(WebApplicationType.NONE) // .REACTIVE, .SERVLET
