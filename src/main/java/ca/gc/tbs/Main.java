@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import static java.lang.System.exit;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"ca.gc.tbs.domain", "ca.gc.tbs.repository"})
+@ComponentScan(basePackages = {"ca.gc.tbs.domain", "ca.gc.tbs.repository", "ca.gc.tbs.service"})
 @EnableMongoRepositories(repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class Main implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -68,7 +68,10 @@ public class Main implements CommandLineRunner {
     private final HashMap<String, String> IRCC_PageTitleIds = new HashMap<>();
     private final HashMap<String, String> IRCC_UrlLinkIds = new HashMap<>();
     private final HashMap<String, String> IRCC_MlTagIds = new HashMap<>();
-    private final ContentService contentService = new ContentService();
+    
+    @Autowired
+    private ContentService contentService;
+    
     @Autowired
     private ProblemRepository problemRepository;
     @Autowired
